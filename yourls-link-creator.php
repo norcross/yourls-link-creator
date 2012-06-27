@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.0
+Version: 1.01
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -45,7 +45,8 @@ class YOURLSCreator
 		add_action		( 'admin_menu',				array( $this, 'yourls_settings'	) );
 		add_action		( 'admin_init', 			array( $this, 'reg_settings'	) );
 		add_action		( 'admin_head', 			array( $this, 'css_head'		) );
-		add_action		( 'publish_post',			array( $this, 'create_yourls'	), 10, 3 );
+		add_action		( 'save_post',				array( $this, 'create_yourls'	), 10, 3 );
+		add_action		( 'do_meta_boxes',			array( $this, 'metabox_yourls'	), 10, 2 );
 	}
 
 	/**
@@ -54,6 +55,7 @@ class YOURLSCreator
 	 *
 	 * @return YOURLSCreator
 	 */
+	 
 	public static function getInstance() {
 		if ( !self::$instance )
 			self::$instance = new self;
@@ -69,20 +71,22 @@ class YOURLSCreator
 
 	public function create_yourls ($post_id){
 
-		global $current_screen;
-		// only fire on posts
-		if ($current_screen->id !== 'post' )
-			return;
-
 		// only fire when settings have been filled out
 		$yourls_api		= get_option('yourls_api');
 		$yourls_url		= get_option('yourls_url');
 
 		if(	empty($yourls_api) || empty($yourls_url) )
 			return;
+
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
+			return;
+		
+		if (!current_user_can('edit_post', $post_id))
+			return;
+
 		
 		// check for existing YOURLS
-		$yourls_exist = get_post_meta($post_id, '_yourls_url', true);			
+		$yourls_exist = get_post_meta($post_id, '_yourls_url', true);	
 						
 		// go get us a swanky new short URL if we dont have one
 		if(empty($yourls_exist) ) {
@@ -107,16 +111,27 @@ class YOURLSCreator
 		}
 
 	/**
-	 * build out settings page
+	 * build out settings page and meta boxes
 	 *
 	 * @return YOURLSCreator
 	 */
 
-
 	public function yourls_settings() {
 	    add_submenu_page('options-general.php', 'YOURLS Settings', 'YOURLS Settings', 'manage_options', 'yourls-settings', array( $this, 'yourls_settings_display' ));
-		add_meta_box('yours_post_display', __('YOURLS Shortlink'), array(&$this, 'yours_post_display'), 'post', 'side', 'high');
 	}
+
+	public function metabox_yourls( $page, $context ) {
+		
+		$args = array(
+			'public'   => true
+		); 
+		
+		$types = get_post_types($args);
+    	
+		if ( in_array( $page,  $types ) && 'side' == $context )
+			add_meta_box('yours_post_display', __('YOURLS Shortlink'), array(&$this, 'yours_post_display'), $page, $context, 'high');
+	}
+
 
 	/**
 	 * Register settings
@@ -222,7 +237,8 @@ class YOURLSCreator
 	 * @return YOURLSCreator
 	 */
 
-	public function yours_post_display(){
+	public function yours_post_display() {
+	
 		global $post;
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
 

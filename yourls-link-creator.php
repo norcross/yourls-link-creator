@@ -72,9 +72,9 @@ class YOURLSCreator
 	public function create_yourls ($post_id){
 
 		// only fire when settings have been filled out
-		$$yourls_options = get_option('$yourls_options');
+		$yourls_options = get_option('$yourls_options');
 
-		if(	empty($$yourls_options['api']) || empty($$yourls_options['url']) )
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
 
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
@@ -89,10 +89,10 @@ class YOURLSCreator
 						
 		// go get us a swanky new short URL if we dont have one
 		if(empty($yourls_exist) ) {
-			$clean_url	= str_replace('http://', '', $$yourls_options['url']);
+			$clean_url	= str_replace('http://', '', $yourls_options['url']);
 	
 			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
-			$api_key	= $$yourls_options['api'];
+			$api_key	= $yourls_options['api'];
 			$action		= 'shorturl';
 			$format		= 'JSON';
 			$post_url	= get_permalink($post_id);

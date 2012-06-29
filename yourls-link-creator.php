@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.01
+Version: 1.02
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -72,10 +72,9 @@ class YOURLSCreator
 	public function create_yourls ($post_id){
 
 		// only fire when settings have been filled out
-		$yourls_api		= get_option('yourls_api');
-		$yourls_url		= get_option('yourls_url');
+		$$yourls_options = get_option('$yourls_options');
 
-		if(	empty($yourls_api) || empty($yourls_url) )
+		if(	empty($$yourls_options['api']) || empty($$yourls_options['url']) )
 			return;
 
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
@@ -90,10 +89,10 @@ class YOURLSCreator
 						
 		// go get us a swanky new short URL if we dont have one
 		if(empty($yourls_exist) ) {
-			$clean_url	= str_replace('http://', '', $yourls_url);
+			$clean_url	= str_replace('http://', '', $$yourls_options['url']);
 	
 			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
-			$api_key	= $yourls_api;
+			$api_key	= $$yourls_options['api'];
 			$action		= 'shorturl';
 			$format		= 'JSON';
 			$post_url	= get_permalink($post_id);
@@ -141,8 +140,7 @@ class YOURLSCreator
 
 
 	public function reg_settings() {
-		register_setting( 'yourls_options', 'yourls_url');
-		register_setting( 'yourls_options', 'yourls_api');
+		register_setting( 'yourls_options', 'yourls_options');
 	}
 
 	/**
@@ -184,38 +182,35 @@ class YOURLSCreator
 	
 		<div class="wrap">
     	<div class="icon32" id="icon-yourls"><br></div>
-		<h2>YOURLS Link Creator Settings</h2>
+		<h2><?php _e('YOURLS Link Creator Settings') ?></h2>
         
 	        <div class="yourls_options">
             	<div class="yourls_form_text">
-            	<p>Text to explain what the heck this is gonna do.</p>
+            	<p><?php _e('This block of text will eventually have an explanation of what it does.') ?></p>
                 </div>
                 
                 <div class="yourls_form_options">
 	            <form method="post" action="options.php">
 			    <?php
                 settings_fields( 'yourls_options' );
-				$yourls_api		= get_option('yourls_api');
-				$yourls_url		= get_option('yourls_url');
-				$api_display	= (!empty($yourls_api) ? $yourls_api : '');
-				$url_display	= (!empty($yourls_url) ? $yourls_url : '');
+				$yourls_options	= get_option('yourls_options');
 				?>
 
                 <table class="form-table yours-table">
 				<tbody>
                 	<tr>
-                        <th><label for="yourls_url">YOURLS Custom URL</label></th>
+                        <th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL') ?></label></th>
                         <td>
-                        	<input type="text" class="regular-text" value="<?php echo $url_display; ?>" id="yourls_url" name="yourls_url">
-                            <p class="description">Actual URL only. Omit the http://</p>
+                        	<input type="text" class="regular-text" value="<?php if(isset($yourls_options['url'] )) echo $yourls_options['url']; ?>" id="yourls_url" name="yourls_options[url]">
+                            <p class="description"><?php _e('Actual URL only. Omit the http://') ?></p>
 						</td>
                     </tr>
 
                 	<tr>
-                        <th><label for="yourls_api">YOURLS API Signature Key</label></th>
+                        <th><label for="yourls_options[api]"><?php _e('YOURLS API Signature Key') ?></label></th>
                         <td>
-                        	<input type="text" class="regular-text" value="<?php echo $api_display; ?>" id="yourls_api" name="yourls_api">
-                            <p class="description">Found in the 'tools' section on your YOURLS admin page.</p>
+                        	<input type="text" class="regular-text" value="<?php if(isset($yourls_options['api'] )) echo $yourls_options['api']; ?>" id="yourls_api" name="yourls_options[api]">
+                            <p class="description"><?php _e('Found in the tools section on your YOURLS admin page.') ?></p>
 						</td>
                     </tr>
 				</tbody>
@@ -242,11 +237,16 @@ class YOURLSCreator
 		global $post;
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
 
+		$link_y = '<p class="howto">' . __('Your custom YOURLS link.') . '</p>';
+		$link_n = '<p class="howto">' . __('A YOURLS link has been generated.') . '</p>';		
+
+
 		if(!empty($yourls_link)) {
-            echo '<input id="yourls_link" class="widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
-			echo '<p class="howto">Your custom YOURLS link.</p>';
+            
+			echo '<input id="yourls_link" class="widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			echo '<p class="howto">'.$link_y.'</p>';
 		} else {
-			echo '<p class="howto">No YOURLS link has been generated for this post.</p>';
+			echo '<p class="howto">'.$link_n.'</p>';
 		}
 	}
 

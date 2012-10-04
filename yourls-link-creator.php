@@ -40,9 +40,13 @@ class YOURSCreator
 		add_action		( 'wp_ajax_create_yourls',		array( $this, 'create_yourls'		)			);
 		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
 		add_action		( 'manage_posts_custom_column',	array( $this, 'display_columns'		), 10,	2	);
+		add_action		( 'yourls_cron',				array( $this, 'yourls_click_cron'	)			);
 		add_filter		( 'manage_posts_columns',		array( $this, 'register_columns'	)			);
 		add_filter		( 'get_shortlink',				array( $this, 'yourls_shortlink'	), 10,	3	);
 		add_filter		( 'plugin_action_links',		array( $this, 'quick_link'			), 10,	2	);
+
+		register_activation_hook			( __FILE__, array( $this, 'schedule_cron'		)			);		
+		register_deactivation_hook			( __FILE__, array( $this, 'remove_cron'			)			);
 	}
 
 
@@ -307,6 +311,79 @@ class YOURSCreator
 
 		}
 
+	}
+
+
+	/**
+	 * scheduling for YOURLS cron jobs
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function schedule_cron() {
+		if ( !wp_next_scheduled( 'yourls_cron' ) ) {
+			wp_schedule_event(time(), 'hourly', 'yourls_cron');
+		}
+	}
+
+	public function remove_cron() {
+		$timestamp = wp_next_scheduled( 'yourls_cron' );
+		wp_unschedule_event($timestamp, 'yourls_cron' );
+	}
+
+	/**
+	 * run cron job to get click counts
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function yourls_click_cron() {
+
+		$yourls_options = get_option('yourls_options');
+		
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+			return;
+
+		$args = array (
+			'fields'		=> 'ids',
+			'post_type'		=> 'any',
+			'numberposts'	=> -1,
+			'meta_key'		=> '_yourls_url',
+			);		
+
+		$yourls_posts = get_posts( $args );
+		$yourls_count = (count($yourls_posts) > 0 ) ? true : false;
+
+		if($yourls_count == false)
+			return;
+
+		foreach ($yourls_posts as $post) : setup_postdata($post);
+
+			$yourls_url = get_post_meta($post, '_yourls_url', true);
+			$clean_url	= str_replace('http://', '', $yourls_options['url']);
+			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+			$api_key	= $yourls_options['api'];
+			$action		= 'url-stats';
+			$format		= 'json';
+			$shorturl	= $yourls_url;
+
+			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&shorturl='.$shorturl.'&format='.$format.'';
+			
+			$response	= wp_remote_get( $yourls_r );
+
+			if( is_wp_error( $response ) )
+				return;
+
+			$raw_data	= $response['body'];
+			$data		= json_decode($raw_data);
+
+			if($data){
+				$linkdata	= $data->link;
+				$clicks		= $linkdata->clicks;
+				update_post_meta($post, '_yourls_clicks', $clicks);
+			}
+				
+		endforeach;
 
 	}
 

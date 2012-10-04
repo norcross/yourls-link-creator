@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.03
+Version: 1.0
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -33,14 +33,16 @@ class YOURSCreator
 	 * @return YOURSCreator
 	 */
 	public function __construct() {
-		add_action		( 'admin_enqueue_scripts',	array( $this, 'scripts_styles'		), 10		);
-		add_action		( 'admin_menu',				array( $this, 'yourls_settings'		) 			);
-		add_action		( 'admin_init', 			array( $this, 'reg_settings'		) 			);
-		add_action		( 'do_meta_boxes',			array( $this, 'metabox_yourls'		), 10,	2	);
-		add_action		( 'wp_ajax_create_yourls',	array( $this, 'create_yourls'		)			);
-		add_action		( 'wp_ajax_stats_yourls',	array( $this, 'stats_yourls'		)			);
-		add_filter		( 'get_shortlink',			array( $this, 'yourls_shortlink'	), 10,	3	);
-		add_filter		( 'plugin_action_links',	array( $this, 'quick_link'			), 10,	2	);
+		add_action		( 'admin_enqueue_scripts',		array( $this, 'scripts_styles'		), 10		);
+		add_action		( 'admin_menu',					array( $this, 'yourls_settings'		) 			);
+		add_action		( 'admin_init', 				array( $this, 'reg_settings'		) 			);
+		add_action		( 'do_meta_boxes',				array( $this, 'metabox_yourls'		), 10,	2	);
+		add_action		( 'wp_ajax_create_yourls',		array( $this, 'create_yourls'		)			);
+		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
+		add_action		( 'manage_posts_custom_column',	array( $this, 'display_columns'		), 10,	2	);
+		add_filter		( 'manage_posts_columns',		array( $this, 'register_columns'	)			);
+		add_filter		( 'get_shortlink',				array( $this, 'yourls_shortlink'	), 10,	3	);
+		add_filter		( 'plugin_action_links',		array( $this, 'quick_link'			), 10,	2	);
 	}
 
 
@@ -57,11 +59,14 @@ class YOURSCreator
 			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__) );
 		}
 
-		if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
-			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__) );
-			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
+		if ( $hook == 'edit.php' ) {
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
 		}
 
+		if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
+			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
+		}
 
 	}
 
@@ -91,6 +96,70 @@ class YOURSCreator
 		return $links;
 
 	}	
+
+	/**
+	 * register and display columns
+	 *
+	 * @since 1.0
+	 */
+
+
+	public function register_columns( $columns ) {
+
+		$current_screen = get_current_screen();
+
+		$yourls_options = get_option('yourls_options');
+
+		$args = array(
+			'public'	=> true,
+			'_builtin'	=> false
+		); 
+
+		$customs	= get_post_types($args);
+		$builtin	= array('post' => 'post');
+
+		$types		= isset($yourls_options['cpt'])	? array_merge($customs, $builtin) : $builtin;
+		$screen		= $current_screen->post_type;
+
+		if ( !in_array( $screen,  $types ) )
+			return $columns;
+
+		$icon = '<img src="'.plugins_url('/lib/img/yourls-click.png', __FILE__).'" alt="Clicked" title="Clicked">';
+		$columns['yourls-click'] = $icon;
+	 
+		return $columns;
+	}
+
+	public function display_columns( $column_name, $post_id ) {
+
+		$current_screen = get_current_screen();
+
+		$yourls_options = get_option('yourls_options');
+
+		$args = array(
+			'public'	=> true,
+			'_builtin'	=> false
+		); 
+
+		$customs	= get_post_types($args);
+		$builtin	= array('post' => 'post');
+
+		$types		= isset($yourls_options['cpt'])	? array_merge($customs, $builtin) : $builtin;
+		$screen		= $current_screen->post_type;
+
+		if ( !in_array( $screen,  $types ) )
+			return;
+
+		if ( 'yourls-click' != $column_name )
+			return;
+	 	
+		$count	= get_post_meta($post_id, '_yourls_clicks', true);	
+		
+		$clicks	= empty( $count ) ? '0' : $count;
+
+		echo '<span>'.$clicks.'</span>';
+
+	}
 
 	/**
 	 * Create shortlink function. Called on ajax
@@ -231,6 +300,7 @@ class YOURSCreator
 				$ret['success'] = true;
 				$ret['message'] = 'Your shortlink has been clicked '.$clicks.' times.';
 				$ret['clicks']	= $clicks;
+				update_post_meta($postID, '_yourls_clicks', $clicks);
 				echo json_encode($ret);
 				die();
 			}

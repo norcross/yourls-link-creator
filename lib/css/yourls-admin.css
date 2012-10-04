@@ -1,3 +1,4 @@
+/* settings page */
 div#icon-yourls {
 	background:url(../img/yourls-icon.png) no-repeat 0 0;
 }
@@ -8,6 +9,15 @@ table.yours-table {
 		
 div.yourls-form-text {
 	margin:0 0 20px 0;
+}
+
+/* post table */
+
+table th#yourls-click, 
+table tfoot th.column-yourls-click, 
+table td.yourls-click {
+	width:65px;
+	text-align:center;
 }
 
 /* post metabox */

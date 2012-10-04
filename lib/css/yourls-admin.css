@@ -1,0 +1,52 @@
+div#icon-yourls {
+	background:url(../img/yourls-icon.png) no-repeat 0 0;
+}
+	
+table.yours-table {
+	margin:0 0 30px 0;
+}
+		
+div.yourls-form-text {
+	margin:0 0 20px 0;
+}
+
+/* post metabox */
+
+div#yours_post_display p.yourls-create-block {
+	overflow: hidden;
+}
+
+div#yours_post_display p.yourls-create-block input.yourls-api {
+	float: left;
+}
+
+div#yours_post_display p.yourls-create-block input.yourls-keyw {
+	float: right;
+}
+
+
+div#yours_post_display p.yourls-create-block img.btn-yourls {
+	float: left;
+    vertical-align: middle;
+    visibility: hidden;
+    margin: 5px 0 0 10px;
+}
+
+div#yours_post_display p.yourls-exist-block {
+	overflow: hidden;
+}
+
+div#yours_post_display p.yourls-exist-block input.yourls-link {
+	float: left;
+}
+
+div#yours_post_display p.yourls-exist-block input.yourls-stats {
+	float: right;
+}
+
+div#yours_post_display p.yourls-exist-block img.btn-yourls {
+	float: left;
+    vertical-align: middle;
+    visibility: hidden;
+    margin: 5px 0 0 10px;
+}

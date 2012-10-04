@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.02
+Version: 1.03
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -23,69 +23,98 @@ Author URI: http://andrewnorcross.com
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */ 
 
-
-
 // Start up the engine 
-class YOURLSCreator
+class YOURSCreator
 {
+	
 	/**
-	 * Static property to hold our singleton instance
-	 * @var YOURLSCreator
-	 */
-	static $instance = false;
-
-
-	/**
-	 * This is our constructor, which is private to force the use of
-	 * getInstance() to make this a Singleton
+	 * This is our constructor
 	 *
-	 * @return YOURLSCreator
+	 * @return YOURSCreator
 	 */
-	private function __construct() {
-		add_action		( 'admin_menu',				array( $this, 'yourls_settings'	) );
-		add_action		( 'admin_init', 			array( $this, 'reg_settings'	) );
-		add_action		( 'admin_head', 			array( $this, 'css_head'		) );
-		add_action		( 'save_post',				array( $this, 'create_yourls'	), 10, 3 );
-		add_action		( 'do_meta_boxes',			array( $this, 'metabox_yourls'	), 10, 2 );
-	}
-
-	/**
-	 * If an instance exists, this returns it.  If not, it creates one and
-	 * retuns it.
-	 *
-	 * @return YOURLSCreator
-	 */
-	 
-	public static function getInstance() {
-		if ( !self::$instance )
-			self::$instance = new self;
-		return self::$instance;
+	public function __construct() {
+		add_action		( 'admin_enqueue_scripts',	array( $this, 'scripts_styles'		), 10		);
+		add_action		( 'admin_menu',				array( $this, 'yourls_settings'		) 			);
+		add_action		( 'admin_init', 			array( $this, 'reg_settings'		) 			);
+		add_action		( 'do_meta_boxes',			array( $this, 'metabox_yourls'		), 10,	2	);
+		add_action		( 'wp_ajax_create_yourls',	array( $this, 'create_yourls'		)			);
+		add_action		( 'wp_ajax_stats_yourls',	array( $this, 'stats_yourls'		)			);
+		add_filter		( 'get_shortlink',			array( $this, 'yourls_shortlink'	), 10,	3	);
+		add_filter		( 'plugin_action_links',	array( $this, 'quick_link'			), 10,	2	);
 	}
 
 
 	/**
-	 * Create shortlink function. Called on publish_post
+	 * Scripts and stylesheets
 	 *
-	 * @return YOURLSCreator
+	 * @return YOURSCreator
 	 */
 
-	public function create_yourls ($post_id){
+	public function scripts_styles($hook) {
+		
+		$current_screen = get_current_screen();
+		if ( 'settings_page_yourls-settings' == $current_screen->base ) {
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__) );
+		}
 
+		if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__) );
+			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
+		}
+
+
+	}
+
+
+	/**
+	 * show settings link on plugins page
+	 *
+	 * @return YOURSCreator
+	 */
+
+    public function quick_link( $links, $file ) {
+
+		static $this_plugin;
+		
+		if (!$this_plugin) {
+			$this_plugin = plugin_basename(__FILE__);
+		}
+ 
+    	// check to make sure we are on the correct plugin
+    	if ($file == $this_plugin) {
+        	
+			$settings_link	= '<a href="'.menu_page_url( 'yourls-settings', 0 ).'">Settings</a>';
+        
+        	array_unshift($links, $settings_link);
+    	}
+ 
+		return $links;
+
+	}	
+
+	/**
+	 * Create shortlink function. Called on ajax
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function create_yourls (){
+
+		// get the post ID first
+		$postID		= $_POST['postID'];
+		$custom_kw	= (isset($_POST['keyword']) && $_POST['keyword'] !== 'none' ? $_POST['keyword'] : '');
+		
 		// only fire when settings have been filled out
-		$yourls_options = get_option('$yourls_options');
+		$yourls_options = get_option('yourls_options');
 
 		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
 
-		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
-			return;
-		
-		if (!current_user_can('edit_post', $post_id))
+		if (!current_user_can('edit_post', $postID))
 			return;
 
-		
 		// check for existing YOURLS
-		$yourls_exist = get_post_meta($post_id, '_yourls_url', true);	
+		$yourls_exist = get_post_meta($postID, '_yourls_url', true);	
 						
 		// go get us a swanky new short URL if we dont have one
 		if(empty($yourls_exist) ) {
@@ -95,37 +124,153 @@ class YOURLSCreator
 			$api_key	= $yourls_options['api'];
 			$action		= 'shorturl';
 			$format		= 'JSON';
-			$post_url	= get_permalink($post_id);
+			$keyword	= $custom_kw;
+			$post_url	= get_permalink($postID);
 	
-			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&url='.$post_url.'&format='.$format.'';
+			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&url='.$post_url.'&format='.$format.'&keyword='.$keyword.'';
 			
-			$response = wp_remote_get( $yourls_r );
-				if( is_wp_error( $response ) ) {
-					// do something with the error response
-				} else {
-					$data		= $response['body'];
-					update_post_meta($post_id, '_yourls_url', $data);
-				}
+			$response	= wp_remote_get( $yourls_r );
+
+			$ret = array();
+
+			if( is_wp_error( $response ) ) {
+				// we don't want to interfere with the save process. store message and return
+				$ret['success']	= false;
+				$ret['message'] = 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['error']	= 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['errcode']	= 'NOCONNECT';
+				$ret['process'] = 'remote post failed';
+				echo json_encode($ret);
+				die();
+
+			} else {
+				$data		= $response['body'];
 			}
+
+			if(!$data) {
+				$ret['success'] = false;
+				$ret['error']	= 'Unknown error';
+				$ret['errcode']	= 'NORETURN';
+				echo json_encode($ret);
+				die();
+			}
+
+			if($data){
+				$ret['success'] = true;
+				$ret['message'] = 'You have created a new YOURLS link';
+				$ret['link']	= esc_url($data);
+				update_post_meta($postID, '_yourls_url', $data);
+				echo json_encode($ret);
+				die();
+			}
+
 		}
+		
+	}
+
+	/**
+	 * retireve stats
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function stats_yourls() {
+
+		$yourls_options = get_option('yourls_options');
+		
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+			return;
+
+		$postID		= $_POST['postID'];
+
+		$yourls_url = get_post_meta($postID, '_yourls_url', true);
+
+		// gimme some click data honey
+		if(!empty($yourls_url) ) {
+			$clean_url	= str_replace('http://', '', $yourls_options['url']);
+	
+			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+			$api_key	= $yourls_options['api'];
+			$action		= 'url-stats';
+			$format		= 'json';
+			$shorturl	= $yourls_url;
+	
+			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&shorturl='.$shorturl.'&format='.$format.'';
+			
+			$response	= wp_remote_get( $yourls_r );
+
+			$ret = array();
+
+			if( is_wp_error( $response ) ) {
+				// we don't want to interfere with the save process. store message and return
+				$ret['success']	= false;
+				$ret['message'] = 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['error']	= 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['errcode']	= 'NOCONNECT';
+				$ret['process'] = 'remote post failed';
+				echo json_encode($ret);
+				die();
+
+			} else {
+				$raw_data	= $response['body'];
+				$data		= json_decode($raw_data);
+			}
+
+			if(!$data) {
+				$ret['success'] = false;
+				$ret['error']	= 'Unknown error';
+				$ret['errcode']	= 'NORETURN';
+				echo json_encode($ret);
+				die();
+			}
+
+			if($data){
+				$linkdata	= $data->link;
+				$clicks		= $linkdata->clicks;
+
+				$ret['success'] = true;
+				$ret['message'] = 'Your shortlink has been clicked '.$clicks.' times.';
+				$ret['clicks']	= $clicks;
+				echo json_encode($ret);
+				die();
+			}
+
+		}
+
+
+	}
 
 	/**
 	 * build out settings page and meta boxes
 	 *
-	 * @return YOURLSCreator
+	 * @return YOURSCreator
 	 */
 
 	public function yourls_settings() {
 	    add_submenu_page('options-general.php', 'YOURLS Settings', 'YOURLS Settings', 'manage_options', 'yourls-settings', array( $this, 'yourls_settings_display' ));
 	}
 
+	/**
+	 * display metabox
+	 *
+	 * @return YOURSCreator
+	 */
+
 	public function metabox_yourls( $page, $context ) {
+		$yourls_options = get_option('yourls_options');
 		
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+			return;
+
 		$args = array(
-			'public'   => true
+			'public'	=> true,
+			'_builtin'	=> false
 		); 
+
+		$customs	= get_post_types($args);
+		$builtin	= array('post' => 'post');	
 		
-		$types = get_post_types($args);
+		$types		= isset($yourls_options['cpt'])	? array_merge($customs, $builtin) : $builtin;
     	
 		if ( in_array( $page,  $types ) && 'side' == $context )
 			add_meta_box('yours_post_display', __('YOURLS Shortlink'), array(&$this, 'yours_post_display'), $page, $context, 'high');
@@ -135,7 +280,7 @@ class YOURLSCreator
 	/**
 	 * Register settings
 	 *
-	 * @return YOURLSCreator
+	 * @return YOURSCreator
 	 */
 
 
@@ -143,93 +288,11 @@ class YOURLSCreator
 		register_setting( 'yourls_options', 'yourls_options');
 	}
 
-	/**
-	 * CSS in the head for the settings page
-	 *
-	 * @return YOURLSCreator
-	 */
-
-	public function css_head() { ?>
-		<style type="text/css">
-
-		div#icon-yourls {
-			background:url(<?php echo plugins_url('/img/yourls-icon.png', __FILE__); ?>) no-repeat 0 0!important;
-		}
-		
-		div.yourls_options {
-			padding:1em;
-		}
-		
-		table.yours-table {
-			margin:0 0 30px 0;
-		}
-		
-		div.yourls_form_text {
-			margin:0 0 20px 0;
-		}
-		
-		</style>
-
-	<?php }
-
-	/**
-	 * Display main options page structure
-	 *
-	 * @return YOURLSCreator
-	 */
-	 
-	public function yourls_settings_display() { ?>
-	
-		<div class="wrap">
-    	<div class="icon32" id="icon-yourls"><br></div>
-		<h2><?php _e('YOURLS Link Creator Settings') ?></h2>
-        
-	        <div class="yourls_options">
-            	<div class="yourls_form_text">
-            	<p><?php _e('This block of text will eventually have an explanation of what it does.') ?></p>
-                </div>
-                
-                <div class="yourls_form_options">
-	            <form method="post" action="options.php">
-			    <?php
-                settings_fields( 'yourls_options' );
-				$yourls_options	= get_option('yourls_options');
-				?>
-
-                <table class="form-table yours-table">
-				<tbody>
-                	<tr>
-                        <th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL') ?></label></th>
-                        <td>
-                        	<input type="text" class="regular-text" value="<?php if(isset($yourls_options['url'] )) echo $yourls_options['url']; ?>" id="yourls_url" name="yourls_options[url]">
-                            <p class="description"><?php _e('Actual URL only. Omit the http://') ?></p>
-						</td>
-                    </tr>
-
-                	<tr>
-                        <th><label for="yourls_options[api]"><?php _e('YOURLS API Signature Key') ?></label></th>
-                        <td>
-                        	<input type="text" class="regular-text" value="<?php if(isset($yourls_options['api'] )) echo $yourls_options['api']; ?>" id="yourls_api" name="yourls_options[api]">
-                            <p class="description"><?php _e('Found in the tools section on your YOURLS admin page.') ?></p>
-						</td>
-                    </tr>
-				</tbody>
-                </table>        
-    
-	    		<p><input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" /></p>
-				</form>
-                </div>
-    
-            </div>
-        
-        </div>    
-	
-	<?php }
 		
 	/**
 	 * Display YOURLS shortlink if present
 	 *
-	 * @return YOURLSCreator
+	 * @return YOURSCreator
 	 */
 
 	public function yours_post_display() {
@@ -237,22 +300,220 @@ class YOURLSCreator
 		global $post;
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
 
-		$link_y = '<p class="howto">' . __('Your custom YOURLS link.') . '</p>';
-		$link_n = '<p class="howto">' . __('A YOURLS link has been generated.') . '</p>';		
-
-
 		if(!empty($yourls_link)) {
-            
-			echo '<input id="yourls_link" class="widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
-			echo '<p class="howto">'.$link_y.'</p>';
-		} else {
-			echo '<p class="howto">'.$link_n.'</p>';
+
+			echo '<p class="yourls-exist-block">';            
+			echo '<input id="yourls_link" size="28" class="yourls-link" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			echo '<input type="button" class="button-secondary yourls-stats" id="yourls_stats" type="text" name="yourls_stats" value="Stats" tabindex="502" />';
+			echo '<img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'">';
+			echo '</p>';
+			echo '<p class="howto">' . __('Your generated YOURLS link.') . '</p>';
+		
+		}
+
+		if(empty($yourls_link)) {
+
+			echo '<p class="yourls-create-block">';
+			echo '<input type="button" class="button-secondary yourls-api" id="yourls_get" type="text" name="yourls_get" value="Get YOURLS" tabindex="502" />';
+			echo '<input id="yourls_keyw" class="yourls-keyw" size="16" type="text" name="yourls_keyw" value="" tabindex="501" />';
+			echo '</p>';
+			echo '<p class="howto">' . __('Optional custom link text.') . '</p>';
 		}
 	}
+
+	/**
+	 * Filter wp_shortlink with new YOURLS link
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function yourls_shortlink($shortlink, $id, $context) {
+
+		$yourls_options = get_option('yourls_options');
+		
+		// Look for the post ID passed by wp_get_shortlink() first
+		if ( empty( $id ) ) {
+			global $post;
+			$id = $post->ID;
+		}
+
+		// Fall back in case we still don't have a post ID
+		if ( empty( $id ) ) {
+		
+			if ( ! empty( $shortlink ) )
+				return $shortlink;
+
+			return false;
+		}
+
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+			return $shortlink;
+
+		if(	!isset($yourls_options['sht']) )
+			return $shortlink;
+		
+		$yourls_exist = get_post_meta($id, '_yourls_url', true);
+
+		if ( !empty($yourls_exist))
+			$shortlink = get_post_meta( $id, '_yourls_url', true );
+
+		return $shortlink;
+	}
+
+	/**
+	 * Display main options page structure
+	 *
+	 * @return YOURSCreator
+	 */
+	 
+	public function yourls_settings_display() {
+		if (!current_user_can('manage_options') )
+			return;
+		?>
+	
+		<div class="wrap">
+    	<div class="icon32" id="icon-yourls"><br></div>
+		<h2><?php _e('YOURLS Link Creator Settings') ?></h2>
+        
+        <div id="poststuff" class="metabox-holder has-right-sidebar">
+		<?php
+		echo $this->settings_side();
+		echo $this->settings_open();
+		?>
+
+           	<div class="yourls-form-text">
+           	<p><?php _e('This block of text will eventually have an explanation of what it does.') ?></p>
+            </div>
+                
+            <div class="yourls_form_options">
+	            <form method="post" action="options.php">
+			    <?php
+                settings_fields( 'yourls_options' );
+				$yourls_options	= get_option('yourls_options');
+
+				$yourls_url		= (isset($yourls_options['url'])	? $yourls_options['url']	: ''		);
+				$yourls_api		= (isset($yourls_options['api'])	? $yourls_options['api']	: ''		);
+				$yourls_cpt		= (isset($yourls_options['cpt'])	? $yourls_options['cpt']	: 'false'	);
+				$yourls_sht		= (isset($yourls_options['sht'])	? $yourls_options['sht']	: 'false'	);
+				?>
+
+                <table class="form-table yours-table">
+				<tbody>
+                	<tr>
+                        <th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL') ?></label></th>
+                        <td>
+						<input type="text" class="regular-text" value="<?php echo $yourls_url; ?>" id="yourls_url" name="yourls_options[url]">
+                        <p class="description"><?php _e('Actual URL only. Omit the http://') ?></p>
+						</td>
+                    </tr>
+
+                	<tr>
+                        <th><label for="yourls_options[api]"><?php _e('YOURLS API Signature Key') ?></label></th>
+                        <td>
+						<input type="text" class="regular-text" value="<?php echo $yourls_api; ?>" id="yourls_api" name="yourls_options[api]">
+                        <p class="description"><?php _e('Found in the tools section on your YOURLS admin page.') ?></p>
+						</td>
+                    </tr>
+
+                	<tr>
+                        <th><label for="yourls_options[cpt]"><?php _e('Display on Custom Post Types') ?></label></th>
+                        <td>
+						<input type="checkbox" name="yourls_options[cpt]" id="yourls_cpt" value="true" <?php checked( $yourls_cpt, 'true' ); ?> />
+                        <span class="description"><?php _e('Display the YOURLS creator on public custom post types') ?></span>
+						</td>
+                    </tr>
+
+                	<tr>
+                        <th><label for="yourls_options[sht]"><?php _e('Use YOURLS for Shortlink') ?></label></th>
+                        <td>
+						<input type="checkbox" name="yourls_options[sht]" id="yourls_sht" value="true" <?php checked( $yourls_sht, 'true' ); ?> />
+                        <span class="description"><?php _e('Use the YOURLS link wherever wp_shortlink is fired') ?></span>
+						</td>
+                    </tr>
+
+				</tbody>
+                </table>        
+    
+	    		<p><input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" /></p>
+				</form>
+			</div>
+
+	<?php echo $this->settings_close(); ?>
+
+	</div>
+	</div>     
+	
+	<?php }
+
+    /**
+     * Some extra stuff for the settings page
+     *
+     * this is just to keep the area cleaner 
+     *
+     * @return YOURSCreator
+     */
+
+    public function settings_side() { ?>
+
+		<div id="side-info-column" class="inner-sidebar">
+			<div class="meta-box-sortables">
+				<div id="faq-admin-about" class="postbox">
+					<h3 class="hndle" id="about-sidebar"><?php _e('About the Plugin') ?></h3>
+					<div class="inside">
+						<p>Talk to <a href="http://twitter.com/norcross" target="_blank">@norcross</a> on twitter or visit the <a href="http://wordpress.org/support/plugin//" target="_blank">plugin support form</a> for bugs or feature requests.</p>
+						<p><?php _e('<strong>Enjoy the plugin?</strong>') ?><br />
+						<a href="http://twitter.com/?status=I'm using @norcross's YOURLS AJAX plugin - check it out! http://l.norc.co/yajax/" target="_blank"><?php _e('Tweet about it') ?></a> <?php _e('and consider donating.') ?></p>
+						<p><?php _e('<strong>Donate:</strong> A lot of hard work goes into building plugins - support your open source developers. Include your twitter username and I\'ll send you a shout out for your generosity. Thank you!') ?><br />
+						<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+						<input type="hidden" name="cmd" value="_s-xclick">
+						<input type="hidden" name="hosted_button_id" value="11085100">
+						<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+						<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+						</form></p>
+					</div>
+				</div>
+			</div>
+			
+			<div class="meta-box-sortables">
+				<div id="faq-admin-more" class="postbox">
+					<h3 class="hndle" id="about-sidebar"><?php _e('Links:') ?></h3>
+					<div class="inside">
+						<ul>
+						<li><a href="http://wordpress.org/extend/plugins//" target="_blank">Plugin on WP.org</a></li>
+						<li><a href="https://github.com/norcross/r" target="_blank">Plugin on GitHub</a></li>
+						<li><a href="http://wordpress.org/support/plugin/" target="_blank">Support Forum</a><li>
+            			</ul>
+					</div>
+				</div>
+			</div>
+		</div> <!-- // #side-info-column .inner-sidebar -->
+
+    <?php }
+
+	public function settings_open() { ?>
+
+		<div id="post-body" class="has-sidebar">
+			<div id="post-body-content" class="has-sidebar-content">
+				<div id="normal-sortables" class="meta-box-sortables">
+					<div id="about" class="postbox">
+						<div class="inside">
+
+    <?php }
+
+	public function settings_close() { ?>
+
+						<br class="clear" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+    <?php }	
 
 /// end class
 }
 
 
 // Instantiate our class
-$YOURLSCreator = YOURLSCreator::getInstance();
+$YOURSCreator = new YOURSCreator();

@@ -476,6 +476,10 @@ class YOURSCreator
 
 	public function yourls_shortlink($shortlink, $id, $context) {
 
+		// no shortlinks exist on non-singular items, so bail
+		if (!is_singular() )
+			return;
+
 		$yourls_options = get_option('yourls_options');
 		
 		// Look for the post ID passed by wp_get_shortlink() first

@@ -11,6 +11,16 @@ div.yourls-form-text {
 	margin:0 0 20px 0;
 }
 
+div.yours-sidebox {}
+
+div.yours-sidebox hr {
+	margin: 1em 0;
+    border: 0;
+    height: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 /* post table */
 
 table th#yourls-click, 

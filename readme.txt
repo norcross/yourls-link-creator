@@ -4,8 +4,8 @@ Website Link: http://andrewnorcross.com/plugins/yourls-link-creator/
 Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink
 Requires at least: 3.0
-Tested up to: 3.4
-Stable tag: 1.00
+Tested up to: 3.5
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Creates a YOURLS generated shortlink when saving posts.
 
 == Description ==
 
-Creates a YOURLS generated shortlink when saving posts.
+Creates a YOURLS generated shortlink when saving posts. Allows for custom keyword inclusion when creating link, and quick view of click stats after creation.
 
 == Installation ==
 

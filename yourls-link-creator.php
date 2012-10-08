@@ -39,6 +39,7 @@ class YOURSCreator
 		add_action		( 'do_meta_boxes',				array( $this, 'metabox_yourls'		), 10,	2	);
 		add_action		( 'wp_ajax_create_yourls',		array( $this, 'create_yourls'		)			);
 		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
+		add_action		( 'wp_ajax_clicks_yourls',		array( $this, 'clicks_yourls'		)			);
 		add_action		( 'manage_posts_custom_column',	array( $this, 'display_columns'		), 10,	2	);
 		add_action		( 'yourls_cron',				array( $this, 'yourls_click_cron'	)			);
 		add_filter		( 'manage_posts_columns',		array( $this, 'register_columns'	)			);
@@ -60,7 +61,8 @@ class YOURSCreator
 		
 		$current_screen = get_current_screen();
 		if ( 'settings_page_yourls-settings' == $current_screen->base ) {
-			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__) );
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
+			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
 		}
 
 		if ( $hook == 'edit.php' ) {
@@ -313,6 +315,78 @@ class YOURSCreator
 
 	}
 
+	/**
+	 * run update job to get click counts via manual ajax
+	 *
+	 * @return YOURSCreator
+	 */
+
+	public function clicks_yourls() {
+
+		$yourls_options = get_option('yourls_options');
+		
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+			return;
+
+		$args = array (
+			'fields'		=> 'ids',
+			'post_type'		=> 'any',
+			'numberposts'	=> -1,
+			'meta_key'		=> '_yourls_url',
+			);		
+
+		$yourls_posts = get_posts( $args );
+		$yourls_count = (count($yourls_posts) > 0 ) ? true : false;
+
+		$ret = array();
+
+		if($yourls_count == false) {
+			$ret['success'] = false;
+			$ret['error']	= 'No posts to check.';
+			$ret['errcode']	= 'NOPOSTS';
+			echo json_encode($ret);
+			die();
+		}
+
+		foreach ($yourls_posts as $post) : setup_postdata($post);
+
+			$yourls_url = get_post_meta($post, '_yourls_url', true);
+			$clean_url	= str_replace('http://', '', $yourls_options['url']);
+			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+			$api_key	= $yourls_options['api'];
+			$action		= 'url-stats';
+			$format		= 'json';
+			$shorturl	= $yourls_url;
+
+			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&shorturl='.$shorturl.'&format='.$format.'';
+			
+			$response	= wp_remote_get( $yourls_r );
+
+			if( is_wp_error( $response ) ) {
+				$ret['success'] = false;
+				$ret['error']	= 'Could not connect to the YOURLS server.';
+				$ret['errcode']	= 'APIERROR';
+				echo json_encode($ret);
+				die();
+			}
+
+			$raw_data	= $response['body'];
+			$data		= json_decode($raw_data);
+
+			if($data){
+				$linkdata	= $data->link;
+				$clicks		= $linkdata->clicks;
+				update_post_meta($post, '_yourls_clicks', $clicks);
+			}
+				
+		endforeach;
+
+			$ret['success'] = true;
+			$ret['message']	= 'Data has been updated.';
+			echo json_encode($ret);
+			die();
+
+	}
 
 	/**
 	 * scheduling for YOURLS cron jobs
@@ -332,7 +406,7 @@ class YOURSCreator
 	}
 
 	/**
-	 * run cron job to get click counts
+	 * run update job to get click counts via cron
 	 *
 	 * @return YOURSCreator
 	 */
@@ -446,15 +520,16 @@ class YOURSCreator
 	
 		global $post;
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
+		$yourls_clicks	= get_post_meta($post->ID, '_yourls_clicks', true);
 
 		if(!empty($yourls_link)) {
 
 			echo '<p class="yourls-exist-block">';            
-			echo '<input id="yourls_link" size="28" class="yourls-link" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
-			echo '<input type="button" class="button-secondary yourls-stats" id="yourls_stats" type="text" name="yourls_stats" value="Stats" tabindex="502" />';
-			echo '<img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'">';
+			echo '<input id="yourls_link" size="28" class="yourls-link widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
 			echo '</p>';
-			echo '<p class="howto">' . __('Your generated YOURLS link.') . '</p>';
+
+			if(!empty($yourls_clicks))
+				echo '<p class="howto">' . __('Your YOURLS link has generated '.$yourls_clicks.' clicks.') . '</p>';
 		
 		}
 
@@ -463,6 +538,7 @@ class YOURSCreator
 			echo '<p class="yourls-create-block">';
 			echo '<input type="button" class="button-secondary yourls-api" id="yourls_get" type="text" name="yourls_get" value="Get YOURLS" tabindex="502" />';
 			echo '<input id="yourls_keyw" class="yourls-keyw" size="16" type="text" name="yourls_keyw" value="" tabindex="501" />';
+			echo '<img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'">';
 			echo '</p>';
 			echo '<p class="howto">' . __('Optional custom link text.') . '</p>';
 		}
@@ -536,7 +612,7 @@ class YOURSCreator
            	<p><?php _e('This block of text will eventually have an explanation of what it does.') ?></p>
             </div>
                 
-            <div class="yourls_form_options">
+            <div class="yourls-form-options">
 	            <form method="post" action="options.php">
 			    <?php
                 settings_fields( 'yourls_options' );
@@ -587,6 +663,7 @@ class YOURSCreator
     
 	    		<p><input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" /></p>
 				</form>
+
 			</div>
 
 	<?php echo $this->settings_close(); ?>
@@ -608,7 +685,7 @@ class YOURSCreator
 
 		<div id="side-info-column" class="inner-sidebar">
 			<div class="meta-box-sortables">
-				<div id="faq-admin-about" class="postbox">
+				<div id="yourls-admin-about" class="postbox yours-sidebox">
 					<h3 class="hndle" id="about-sidebar"><?php _e('About the Plugin') ?></h3>
 					<div class="inside">
 						<p>Talk to <a href="http://twitter.com/norcross" target="_blank">@norcross</a> on twitter or visit the <a href="http://wordpress.org/support/plugin//" target="_blank">plugin support form</a> for bugs or feature requests.</p>
@@ -624,10 +701,27 @@ class YOURSCreator
 					</div>
 				</div>
 			</div>
+
+			<div class="meta-box-sortables">
+				<div id="yourls-data-refresh" class="postbox yours-sidebox">
+					<h3 class="hndle" id="data-sidebar"><?php _e('Data Options:') ?></h3>
+					<div class="inside">
+						<p>Click the button below to refresh the click count data for all posts with a YOURLS link.</p>
+						<input type="button" class="yours-click-updates button-secondary" value="Refresh Click Counts" >
+						<img class="ajax-loading btn-yourls" src="<?php echo plugins_url('/lib/img/wpspin-light.gif', __FILE__); ?>" >
+
+<!--					the YOURLS API doesn't support a way just check for a URL or not.
+						<hr />
+						<p>Click the button below to check for existing YOURLS data for your site content.</p>
+						<input type="button" class="yours-import button-secondary" value="Import YOURLS data" >
+-->						
+					</div>
+				</div>
+			</div>
 			
 			<div class="meta-box-sortables">
-				<div id="faq-admin-more" class="postbox">
-					<h3 class="hndle" id="about-sidebar"><?php _e('Links:') ?></h3>
+				<div id="yourls-admin-more" class="postbox yours-sidebox">
+					<h3 class="hndle" id="links-sidebar"><?php _e('Links:') ?></h3>
 					<div class="inside">
 						<ul>
 						<li><a href="http://wordpress.org/extend/plugins//" target="_blank">Plugin on WP.org</a></li>
@@ -637,6 +731,7 @@ class YOURSCreator
 					</div>
 				</div>
 			</div>
+
 		</div> <!-- // #side-info-column .inner-sidebar -->
 
     <?php }

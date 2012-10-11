@@ -2,18 +2,27 @@
 Contributors: norcross
 Website Link: http://andrewnorcross.com/plugins/yourls-link-creator/
 Donate link: https://andrewnorcross.com/donate
-Tags: YOURLS, shortlink
+Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.0
 Tested up to: 3.5
 Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Creates a YOURLS generated shortlink when saving posts.
+Creates a YOURLS generated shortlink when saving posts. Requires your own YOURLS install.
 
 == Description ==
 
-Creates a YOURLS generated shortlink when saving posts. Allows for custom keyword inclusion when creating link, and quick view of click stats after creation.
+Creates a YOURLS generated shortlink when saving posts. 
+
+Features:
+
+*   Optional custom keyword for link creation.
+*   Will retrieve existing URL if one has already been created.
+*   Click count appears on post menu
+*   Available for standard posts and custom post types.
+*   Optional filter for wp_shortlink
+*   Built in cron job will fetch updated click counts every hour.
 
 == Installation ==
 
@@ -32,10 +41,17 @@ This section describes how to install the plugin and get it working.
 
 This plugin creates a shortlink (stored in the post meta table) for each post that can be used in sharing buttons, etc. 
 
+= What is YOURLS? =
+
+YOURLS is a self-hosted PHP based application that allows you to make your own custom shortlinks, similar to bit.ly and j.mp. [Learn more about it here](http://yourls.org/ "YOURLS download")
 
 == Screenshots ==
 
-1. Example of a post with a created link.
+1. Metabox to create YOURLS link with optional keyword field
+2. Example of a post with a created link and click count
+3. Post column displaying click count
+4. Settings page
+
 
 
 == Changelog ==

@@ -494,7 +494,7 @@ class YOURSCreator
 		$types		= isset($yourls_options['cpt'])	? array_merge($customs, $builtin) : $builtin;
     	
 		if ( in_array( $page,  $types ) && 'side' == $context )
-			add_meta_box('yours_post_display', __('YOURLS Shortlink'), array(&$this, 'yours_post_display'), $page, $context, 'high');
+			add_meta_box('yours-post-display', __('YOURLS Shortlink'), array(&$this, 'yours_post_display'), $page, $context, 'high');
 	}
 
 
@@ -521,26 +521,28 @@ class YOURSCreator
 		global $post;
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
 		$yourls_clicks	= get_post_meta($post->ID, '_yourls_clicks', true);
+		
+		$click_count	= empty($yourls_clicks) ? 'no clicks' : ($yourls_clicks > 1 ? $yourls_clicks .' clicks' : '1 click');
 
 		if(!empty($yourls_link)) {
 
 			echo '<p class="yourls-exist-block">';            
-			echo '<input id="yourls_link" size="28" class="yourls-link widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			echo '<input id="yourls_link" size="28" title="click to highlight" class="yourls-link widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
 			echo '</p>';
 
-			if(!empty($yourls_clicks))
-				echo '<p class="howto">' . __('Your YOURLS link has generated '.$yourls_clicks.' clicks.') . '</p>';
+			echo '<p class="howto">' . __('Your YOURLS link has generated '.$click_count.'.') . '</p>';
 		
 		}
 
 		if(empty($yourls_link)) {
 
 			echo '<p class="yourls-create-block">';
-			echo '<input type="button" class="button-secondary yourls-api" id="yourls_get" type="text" name="yourls_get" value="Get YOURLS" tabindex="502" />';
-			echo '<input id="yourls_keyw" class="yourls-keyw" size="16" type="text" name="yourls_keyw" value="" tabindex="501" />';
+			echo '<input id="yourls_keyw" class="yourls-keyw" size="20" type="text" name="yourls_keyw" value="" tabindex="501" />';
 			echo '<img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'">';
+			echo '<input type="button" class="button-secondary yourls-api" id="yourls_get" type="text" name="yourls_get" value="Get YOURLS" tabindex="502" />';
+			echo '<span class="howto">' . __('optional keyword') . '</span>';
 			echo '</p>';
-			echo '<p class="howto">' . __('Optional custom link text.') . '</p>';
+			
 		}
 	}
 

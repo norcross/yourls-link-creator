@@ -32,40 +32,45 @@ table td.yourls-click {
 
 /* post metabox */
 
-div#yours_post_display p.yourls-create-block {
+div#yours-post-display p.yourls-create-block {
 	overflow: hidden;
 }
 
-div#yours_post_display p.yourls-create-block input.yourls-api {
-	float: left;
-}
-
-div#yours_post_display p.yourls-create-block input.yourls-keyw {
+div#yours-post-display p.yourls-create-block input.yourls-api {
 	float: right;
 }
 
+div#yours-post-display p.yourls-create-block input.yourls-keyw {
+	float: left;
+}
 
-div#yours_post_display p.yourls-create-block img.btn-yourls {
+
+div#yours-post-display p.yourls-create-block img.btn-yourls {
 	float: left;
     vertical-align: middle;
     visibility: hidden;
-    margin: 5px 0 0 10px;
+    margin: 5px 3px 0 3px;
 }
 
-div#yours_post_display p.yourls-exist-block {
+div#yours-post-display p.yourls-create-block span {
+	clear: both;
+	text-indent: 8px;
+}
+
+div#yours-post-display p.yourls-exist-block {
 	overflow: hidden;
 }
-
-div#yours_post_display p.yourls-exist-block input.yourls-link {
+/*
+div#yours-post-display p.yourls-exist-block input.yourls-link {
 	float: left;
 }
 
-div#yours_post_display p.yourls-exist-block input.yourls-stats {
+div#yours-post-display p.yourls-exist-block input.yourls-stats {
 	float: right;
 }
-
-div#yours_post_display p.yourls-exist-block img.btn-yourls {
-	float: left;
+*/
+div#yours-post-display p.yourls-exist-block img.btn-yourls {
+/*	float: left; */
     vertical-align: middle;
     visibility: hidden;
     margin: 5px 0 0 10px;

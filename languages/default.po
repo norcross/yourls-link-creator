@@ -1,0 +1,156 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: wpyourls\n"
+"POT-Creation-Date: 2012-12-09 12:02-0500\n"
+"PO-Revision-Date: 2012-12-09 12:02-0500\n"
+"Last-Translator: Andrew Norcross <andrew@andrewnorcross.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;__;_e;gettext;gettext_noop\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: lib\n"
+
+#: yourls-link-creator.php:110
+msgid "Settings"
+msgstr ""
+
+#: yourls-link-creator.php:549
+msgid "YOURLS Settings"
+msgstr ""
+
+#: yourls-link-creator.php:570
+msgid "YOURLS Shortlink"
+msgstr ""
+
+#: yourls-link-creator.php:606
+msgid "Your YOURLS link has generated "
+msgstr ""
+
+#: yourls-link-creator.php:616
+msgid "optional keyword"
+msgstr ""
+
+#: yourls-link-creator.php:712
+msgid "YOURLS Link Creator Settings"
+msgstr ""
+
+#: yourls-link-creator.php:721
+msgid "Below are the basic settings for the YOURLS creator"
+msgstr ""
+
+#: yourls-link-creator.php:742
+msgid "YOURLS Custom URL"
+msgstr ""
+
+#: yourls-link-creator.php:745
+msgid "Actual URL only. Omit the http://"
+msgstr ""
+
+#: yourls-link-creator.php:750
+msgid "YOURLS API Signature Key"
+msgstr ""
+
+#: yourls-link-creator.php:753
+msgid "Found in the tools section on your YOURLS admin page."
+msgstr ""
+
+#: yourls-link-creator.php:758
+msgid "Auto generate links"
+msgstr ""
+
+#: yourls-link-creator.php:761
+msgid "Create a YOURLS link whenever a post is saved."
+msgstr ""
+
+#: yourls-link-creator.php:766
+msgid "Use YOURLS for Shortlink"
+msgstr ""
+
+#: yourls-link-creator.php:769
+msgid "Use the YOURLS link wherever wp_shortlink is fired"
+msgstr ""
+
+#: yourls-link-creator.php:774
+msgid "Display on Custom Post Types"
+msgstr ""
+
+#: yourls-link-creator.php:777
+msgid "Display the YOURLS creator on public custom post types"
+msgstr ""
+
+#: yourls-link-creator.php:782
+msgid "Select the post types to include"
+msgstr ""
+
+#: yourls-link-creator.php:789
+msgid "Save Changes"
+msgstr ""
+
+#: yourls-link-creator.php:814
+msgid "About the Plugin"
+msgstr ""
+
+#: yourls-link-creator.php:816
+msgid "plugin support form"
+msgstr ""
+
+#: yourls-link-creator.php:816
+msgid "for bugs or feature requests."
+msgstr ""
+
+#: yourls-link-creator.php:817
+msgid "<strong>Enjoy the plugin?</strong>"
+msgstr ""
+
+#: yourls-link-creator.php:818
+msgid "Tweet about it"
+msgstr ""
+
+#: yourls-link-creator.php:818
+msgid "and consider donating."
+msgstr ""
+
+#: yourls-link-creator.php:819
+msgid ""
+"<strong>Donate:</strong> A lot of hard work goes into building plugins - "
+"support your open source developers. Include your twitter username and I'll "
+"send you a shout out for your generosity. Thank you!"
+msgstr ""
+
+#: yourls-link-creator.php:832
+msgid "Data Options:"
+msgstr ""
+
+#: yourls-link-creator.php:834
+msgid ""
+"Click the button below to refresh the click count data for all posts with a "
+"YOURLS link."
+msgstr ""
+
+#: yourls-link-creator.php:836
+msgid "Refresh Click Counts"
+msgstr ""
+
+#: yourls-link-creator.php:850
+msgid "Links:"
+msgstr ""
+
+#: yourls-link-creator.php:853
+msgid "YOURLS homepage"
+msgstr ""
+
+#: yourls-link-creator.php:854
+msgid "Plugin on WP.org"
+msgstr ""
+
+#: yourls-link-creator.php:855
+msgid "Plugin on GitHub"
+msgstr ""
+
+#: yourls-link-creator.php:856
+msgid "Support Forum"
+msgstr ""

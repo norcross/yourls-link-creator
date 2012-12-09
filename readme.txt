@@ -5,15 +5,15 @@ Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 1.0
+Stable tag: 1.02
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Creates a YOURLS generated shortlink when saving posts. Requires your own YOURLS install.
+Creates a custom short URL when saving posts. Requires your own YOURLS install.
 
 == Description ==
 
-Creates a YOURLS generated shortlink when saving posts. 
+Creates a YOURLS generated shortlink on demand or when saving posts.
 
 Features:
 
@@ -39,7 +39,7 @@ This section describes how to install the plugin and get it working.
 
 = What's this all about? =
 
-This plugin creates a shortlink (stored in the post meta table) for each post that can be used in sharing buttons, etc. 
+This plugin creates a shortlink (stored in the post meta table) for each post that can be used in sharing buttons, etc.
 
 = What is YOURLS? =
 
@@ -55,6 +55,15 @@ YOURLS is a self-hosted PHP based application that allows you to make your own c
 
 
 == Changelog ==
+
+= 1.02 =
+* Option for adding to specific post types
+* delay link creation until status is published
+* internationalization support
+
+= 1.01 =
+* Added option to create link on post save
+* code cleanup
 
 = 1.0 =
 * First release!

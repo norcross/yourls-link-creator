@@ -85,7 +85,8 @@ div#yourls-post-display p.yourls-exist-block input.yourls-stats {
 	float: right;
 }
 */
-div#yourls-post-display p.yourls-exist-block img.btn-yourls {
+div#yourls-post-display p.yourls-exist-block img.btn-yourls,
+div#yourls-post-display p.yourls-exist-block img.btn-convert {
 /*	float: left; */
     vertical-align: middle;
     visibility: hidden;

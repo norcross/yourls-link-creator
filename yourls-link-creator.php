@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.05
+Version: 1.06
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -23,6 +23,12 @@ Author URI: http://andrewnorcross.com
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+if(!defined('YOURLS_BASE'))
+	define('YOURLS_BASE', plugin_basename(__FILE__) );
+
+if(!defined('YOURS_VER'))
+	define('YOURS_VER', '1.06');
+
 // Start up the engine
 class YOURLSCreator
 {
@@ -39,6 +45,7 @@ class YOURLSCreator
 		add_action		( 'admin_init', 				array( $this, 'reg_settings'		) 			);
 		add_action		( 'do_meta_boxes',				array( $this, 'metabox_yourls'		), 10,	2	);
 		add_action		( 'wp_ajax_create_yourls',		array( $this, 'create_yourls'		)			);
+		add_action		( 'wp_ajax_delete_yourls',		array( $this, 'delete_yourls'		)			);
 		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
 		add_action		( 'wp_ajax_clicks_yourls',		array( $this, 'clicks_yourls'		)			);
 		add_action      ( 'wp_ajax_key_change',     	array( $this, 'key_change'      	)			);
@@ -53,6 +60,9 @@ class YOURLSCreator
 
 		register_activation_hook			( __FILE__, array( $this, 'schedule_cron'		)			);
 		register_deactivation_hook			( __FILE__, array( $this, 'remove_cron'			)			);
+
+		// custom template tag
+		add_action		( 'yourls_display',				array( $this, 'yourls_display'		) 			);
 	}
 
 	/**
@@ -75,19 +85,13 @@ class YOURLSCreator
 
 	public function scripts_styles($hook) {
 
-		$current_screen = get_current_screen();
-		if ( 'settings_page_yourls-settings' == $current_screen->base ) {
-			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
-			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
+		if ( $hook == 'settings_page_yourls-settings' || $hook == 'post-new.php' || $hook == 'post.php' ) {
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), YOURS_VER, 'all' );
+			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), YOURS_VER, true );
 		}
 
 		if ( $hook == 'edit.php' ) {
-			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
-		}
-
-		if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
-			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), null, 'all' );
-			wp_enqueue_script( 'yourls-ajax', plugins_url('/lib/js/yourls.ajax.js', __FILE__) , array('jquery'), null, true );
+			wp_enqueue_style( 'yourls-admin', plugins_url('/lib/css/yourls-admin.css', __FILE__), array(), YOURS_VER, 'all' );
 		}
 
 	}
@@ -116,6 +120,32 @@ class YOURLSCreator
     	}
 
 		return $links;
+
+	}
+
+	/**
+	 * display YOURLS on theme via template tag
+	 *
+	 * @return YOURLSCreator
+	 */
+
+	public function yourls_display() {
+
+		global $post;
+
+		// check for a link
+		$yourls_link	= get_post_meta( $post->ID, '_yourls_url', true );
+
+		// bail if there is no shortlink
+		if (empty($yourls_link) )
+			return;
+
+		$yours_show = '<p class="yourls-display">';
+		$yours_show .= __('Shortlink:', 'wpyourls');
+		$yours_show .= '<input id="yourls-link" size="28" title="click to highlight" type="text" name="yourls-link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+		$yours_show .= '</p>';
+
+		echo $yours_show;
 
 	}
 
@@ -289,8 +319,8 @@ class YOURLSCreator
 			if( is_wp_error( $response ) ) {
 				// we don't want to interfere with the save process. store message and return
 				$ret['success']	= false;
-				$ret['message'] = 'There was an error contacting the YOURLS API. Please try again.';
-				$ret['error']	= 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['message'] = __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
+				$ret['error']	= __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
 				$ret['errcode']	= 'NOCONNECT';
 				$ret['process'] = 'remote post failed';
 				echo json_encode($ret);
@@ -302,7 +332,7 @@ class YOURLSCreator
 
 			if(!$data) {
 				$ret['success'] = false;
-				$ret['error']	= 'Unknown error';
+				$ret['error']	= __('Unknown error', 'wpyourls');
 				$ret['errcode']	= 'NORETURN';
 				echo json_encode($ret);
 				die();
@@ -310,8 +340,10 @@ class YOURLSCreator
 
 			if($data){
 				$ret['success'] = true;
-				$ret['message'] = 'You have created a new YOURLS link';
+				$ret['message'] = __('You have created a new YOURLS link', 'wpyourls');
 				$ret['link']	= esc_url($data);
+				$ret['inputs']	= '<p class="yourls-exist-block"><input id="yourls-link" title="click to highlight" class="yourls-link-input" type="text" name="yourls-link" value="'.esc_url($data).'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" /><input type="button" class="yourls-delete" value="'. __('Delete Link', 'wpyourls').'" ></p><p class="howto"> '. __('Your YOURLS link has generated 0 clicks.', 'wpyourls') .'</p>';
+
 				update_post_meta($postID, '_yourls_url', $data);
 				echo json_encode($ret);
 				die();
@@ -322,7 +354,48 @@ class YOURLSCreator
 	}
 
 	/**
-	 * retireve stats
+	 * Delete shortlink function. Called on ajax
+	 *
+	 * @return YOURLSCreator
+	 */
+
+	public function delete_yourls (){
+
+		// get the post ID first
+		$postID		= $_POST['postID'];
+
+		// only fire if user has the option
+		if (!current_user_can('edit_post', $postID))
+			return;
+
+		// check for existing YOURLS
+		$yourls_exist = get_post_meta($postID, '_yourls_url', true);
+
+		// go get us a swanky new short URL if we dont have one
+		if(!empty($yourls_exist) ) {
+
+			$ret['success'] = true;
+			$ret['message'] = __('The shortlink has been removed from WordPress', 'wpyourls');
+			$ret['inputs']	= '<p class="yourls-create-block"><input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="" tabindex="501" /><img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'"><input type="button" class="button-secondary yourls-api" id="yourls-get" type="text" name="yourls-get" value="Get YOURLS" tabindex="502" /><span class="howto">' . __('optional keyword', 'wpyourls') . '</span></p>';
+
+			delete_post_meta($postID, '_yourls_url');
+			echo json_encode($ret);
+			die();
+
+		} else {
+
+			$ret['success'] = false;
+			$ret['error']	= __('There is no shortlink to delete', 'wpyourls');
+			$ret['errcode']	= 'NODELETE';
+			echo json_encode($ret);
+			die();
+
+		}
+
+	}
+
+	/**
+	 * retrieve stats
 	 *
 	 * @return YOURLSCreator
 	 */
@@ -357,8 +430,8 @@ class YOURLSCreator
 			if( is_wp_error( $response ) ) {
 				// we don't want to interfere with the save process. store message and return
 				$ret['success']	= false;
-				$ret['message'] = 'There was an error contacting the YOURLS API. Please try again.';
-				$ret['error']	= 'There was an error contacting the YOURLS API. Please try again.';
+				$ret['message'] = __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
+				$ret['error']	= __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
 				$ret['errcode']	= 'NOCONNECT';
 				$ret['process'] = 'remote post failed';
 				echo json_encode($ret);
@@ -371,7 +444,7 @@ class YOURLSCreator
 
 			if(!$data) {
 				$ret['success'] = false;
-				$ret['error']	= 'Unknown error';
+				$ret['error']	= __('Unknown error', 'wpyourls');
 				$ret['errcode']	= 'NORETURN';
 				echo json_encode($ret);
 				die();
@@ -382,7 +455,7 @@ class YOURLSCreator
 				$clicks		= $linkdata->clicks;
 
 				$ret['success'] = true;
-				$ret['message'] = 'Your shortlink has been clicked '.$clicks.' times.';
+				$ret['message'] = sprintf( _n('Your shortlink has been clicked %d time.', 'Your shortlink has been clicked %d times.', $clicks, 'wpyourls'), $clicks );
 				$ret['clicks']	= $clicks;
 				update_post_meta($postID, '_yourls_clicks', $clicks);
 				echo json_encode($ret);
@@ -414,13 +487,14 @@ class YOURLSCreator
 			);
 
 		$yourls_posts = get_posts( $args );
-		$yourls_count = (count($yourls_posts) > 0 ) ? true : false;
+		$yourls_count = count($yourls_posts);
+		$yourls_check = $yourls_count > 0 ? true : false;
 
 		$ret = array();
 
-		if($yourls_count === false) {
+		if($yourls_check === false) {
 			$ret['success'] = false;
-			$ret['error']	= 'No posts to check.';
+			$ret['error']	= __('No posts to check.', 'wpyourls');
 			$ret['errcode']	= 'NOPOSTS';
 			echo json_encode($ret);
 			die();
@@ -442,7 +516,7 @@ class YOURLSCreator
 
 			if( is_wp_error( $response ) ) {
 				$ret['success'] = false;
-				$ret['error']	= 'Could not connect to the YOURLS server.';
+				$ret['error']	= __('Could not connect to the YOURLS server.', 'wpyourls');
 				$ret['errcode']	= 'APIERROR';
 				echo json_encode($ret);
 				die();
@@ -462,8 +536,9 @@ class YOURLSCreator
 
 		endforeach;
 
+			$ret['updated'] = $yourls_count;
 			$ret['success'] = true;
-			$ret['message']	= 'Data has been updated.';
+			$ret['message']	= sprintf( _n('Success! %d entry has been updated.', 'Success! %d entries have been updated.', $yourls_count, 'wpyourls'), $yourls_count );
 			echo json_encode($ret);
 			die();
 
@@ -550,18 +625,48 @@ class YOURLSCreator
 
     public function key_change() {
 
-        // get keys from POST
-        $key_old  = 'yourls_shorturl';
-        $key_new  = '_yourls_url';
+		$yourls_options = get_option('yourls_options');
 
         // set up return array for ajax responses
         $ret = array();
 
+        // run check for API info
+		if(	empty($yourls_options['api']) || empty($yourls_options['url']) ) {
+            $ret['success'] = false;
+            $ret['errcode'] = 'API_MISSING';
+            $ret['message'] = __('You have not entered any API information.', 'wpyourls');
+            echo json_encode($ret);
+            die();
+		}
+
+        // set query to look for existing keys
+		$args = array (
+			'fields'		=> 'ids',
+			'post_type'		=> 'any',
+			'numberposts'	=> -1,
+			'meta_key'		=> 'yourls_shorturl',
+			);
+
+		$yourls_posts = get_posts( $args );
+		$yourls_count = count($yourls_posts);
+
+        // return if no keys found
+        if( $yourls_count == 0 ) {
+            $ret['success'] = false;
+            $ret['errcode'] = 'KEY_MISSING';
+            $ret['message'] = $ret['message'] = __('There are no keys to convert.', 'wpyourls');
+            echo json_encode($ret);
+            die();
+        }
+
+        // set up SQL query
         global $wpdb;
 
-        // run SQL query
-        //SET meta_key = REPLACE (meta_key, '".$key_old."', '".$key_new."'),
+        // set keys for swap
+        $key_old  = 'yourls_shorturl';
+        $key_new  = '_yourls_url';
 
+        // run SQL query
         $key_query = $wpdb->query (
             $wpdb->prepare("
                 UPDATE $wpdb->postmeta
@@ -570,19 +675,11 @@ class YOURLSCreator
             )
         );
 
-
-        if( $key_query == 0 ) {
-            $ret['success'] = false;
-            $ret['errcode'] = 'KEY_MISSING';
-            $ret['message'] = 'There are no keys to convert.';
-            echo json_encode($ret);
-            die();
-        }
-
+        // return if keys found and conversion is done
         if( $key_query > 0 ) {
             $ret['success'] = true;
             $ret['updated'] = $key_query;
-            $ret['message'] = $key_query.' entries have been updated.';
+            $ret['message'] = sprintf( _n('Success! %d key has been updated.', 'Success! %d keys have been updated.', $key_query, 'wpyourls'), $key_query );
             echo json_encode($ret);
             die();
         }
@@ -611,6 +708,12 @@ class YOURLSCreator
 		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
 
+		// check post status, only display on published posts
+		$status		= get_post_status();
+		if ( $status !== 'publish' )
+			return;
+
+		// now set array of post types
 		$customs	= isset($yourls_options['typ']) ? $yourls_options['typ'] : false;
 		$builtin	= array('post' => 'post', 'page' => 'page');
 
@@ -645,24 +748,22 @@ class YOURLSCreator
 		$yourls_link	= get_post_meta($post->ID, '_yourls_url', true);
 		$yourls_clicks	= get_post_meta($post->ID, '_yourls_clicks', true);
 
-		$click_count	= empty($yourls_clicks) ? 'no clicks' : ($yourls_clicks > 1 ? $yourls_clicks .' clicks' : '1 click');
-
 		if(!empty($yourls_link)) {
 
 			echo '<p class="yourls-exist-block">';
-			echo '<input id="yourls_link" size="28" title="click to highlight" class="yourls-link widefat" type="text" name="yourls_link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			echo '<input id="yourls-link" title="click to highlight" class="yourls-link-input" type="text" name="yourls-link" value="'.$yourls_link.'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			echo '<input type="button" class="yourls-delete" value="'. __('Delete Link', 'wpyourls').'" >';
 			echo '</p>';
-
-			echo '<p class="howto">' . __('Your YOURLS link has generated '.$click_count.'.', 'wpyourls') . '</p>';
+			echo '<p class="howto">' . sprintf( _n('Your YOURLS link has generated %d click.', 'Your YOURLS link has generated %d clicks.', $yourls_clicks, 'wpyourls'), $yourls_clicks );
 
 		}
 
 		if(empty($yourls_link)) {
 
 			echo '<p class="yourls-create-block">';
-			echo '<input id="yourls_keyw" class="yourls-keyw" size="20" type="text" name="yourls_keyw" value="" tabindex="501" />';
+			echo '<input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="" tabindex="501" />';
 			echo '<img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'">';
-			echo '<input type="button" class="button-secondary yourls-api" id="yourls_get" type="text" name="yourls_get" value="Get YOURLS" tabindex="502" />';
+			echo '<input type="button" class="button-secondary yourls-api" id="yourls-get" type="text" name="yourls-get" value="Get YOURLS" tabindex="502" />';
 			echo '<span class="howto">' . __('optional keyword', 'wpyourls') . '</span>';
 			echo '</p>';
 
@@ -948,9 +1049,12 @@ class YOURLSCreator
 						<input type="button" class="yourls-click-updates button-primary" value="<?php _e('Refresh Click Counts', 'wpyourls'); ?>" >
 						<img class="ajax-loading btn-yourls" src="<?php echo plugins_url('/lib/img/wpspin-light.gif', __FILE__); ?>" >
 						<hr />
+
 						<p><?php _e('Using Ozh\'s plugin? Click here to convert the existing meta keys', 'wpyourls'); ?></p>
 						<input type="button" class="yourls-convert button-primary" value="<?php _e('Convert Meta Keys', 'wpyourls'); ?>" >
 						<img class="ajax-loading btn-convert" src="<?php echo plugins_url('/lib/img/wpspin-light.gif', __FILE__); ?>" >
+
+
 <!--					the YOURLS API doesn't support a way just check for a URL or not.
 						<hr />
 						<p>Click the button below to check for existing YOURLS data for your site content.</p>
@@ -1002,7 +1106,6 @@ class YOURLSCreator
 
 /// end class
 }
-
 
 // Instantiate our class
 $YOURLSCreator = new YOURLSCreator();

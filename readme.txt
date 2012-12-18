@@ -5,7 +5,7 @@ Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 1.05
+Stable tag: 1.06
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,14 @@ This plugin creates a shortlink (stored in the post meta table) for each post th
 
 YOURLS is a self-hosted PHP based application that allows you to make your own custom shortlinks, similar to bit.ly and j.mp. [Learn more about it here](http://yourls.org/ "YOURLS download")
 
+= How do I use the template tag? =
+
+Place the following code in your theme file (usually single.php) `do_action('yourls_display');`
+
+= The delete function doesn't remove the short URL from my YOURLS installation =
+
+This is a limitation with the YOURLS API, as there is not a method yet to delete a link. The delete function has been added to the plugin to allow users to get the updated URL that they may have changed in the YOURLS admin panel
+
 == Screenshots ==
 
 1. Metabox to create YOURLS link with optional keyword field
@@ -55,6 +63,11 @@ YOURLS is a self-hosted PHP based application that allows you to make your own c
 
 
 == Changelog ==
+
+= 1.06 =
+* included template tag for theme use. (See FAQs for usage)
+* added a 'delete' button for single links (See FAQs for details)
+* The YOURLS metabox will not appear until a post has been published.
 
 = 1.05 =
 * added a conversion tool from Ozh's plugin to this one
@@ -79,6 +92,9 @@ YOURLS is a self-hosted PHP based application that allows you to make your own c
 
 
 == Upgrade Notice ==
+
+= 1.06 =
+* The YOURLS metabox will not appear until a post has been published. This is to prevent empty or otherwise incorrect URLs from getting created.
 
 = 1.0 =
 * First release!

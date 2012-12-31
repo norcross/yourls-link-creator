@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wpyourls\n"
-"POT-Creation-Date: 2012-12-18 10:42-0500\n"
-"PO-Revision-Date: 2012-12-18 10:43-0500\n"
+"POT-Creation-Date: 2012-12-24 15:54-0500\n"
+"PO-Revision-Date: 2012-12-24 15:54-0500\n"
 "Last-Translator: Andrew Norcross <andrew@andrewnorcross.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -22,188 +22,188 @@ msgstr ""
 msgid "Shortlink:"
 msgstr ""
 
-#: yourls-link-creator.php:322 yourls-link-creator.php:323
-#: yourls-link-creator.php:433 yourls-link-creator.php:434
+#: yourls-link-creator.php:327 yourls-link-creator.php:328
+#: yourls-link-creator.php:440 yourls-link-creator.php:441
 msgid "There was an error contacting the YOURLS API. Please try again."
 msgstr ""
 
-#: yourls-link-creator.php:335 yourls-link-creator.php:447
+#: yourls-link-creator.php:340 yourls-link-creator.php:454
 msgid "Unknown error"
 msgstr ""
 
-#: yourls-link-creator.php:343
+#: yourls-link-creator.php:348
 msgid "You have created a new YOURLS link"
 msgstr ""
 
-#: yourls-link-creator.php:345 yourls-link-creator.php:755
+#: yourls-link-creator.php:350 yourls-link-creator.php:772
 msgid "Delete Link"
 msgstr ""
 
-#: yourls-link-creator.php:345
+#: yourls-link-creator.php:350
 msgid "Your YOURLS link has generated 0 clicks."
 msgstr ""
 
-#: yourls-link-creator.php:378
+#: yourls-link-creator.php:383
 msgid "The shortlink has been removed from WordPress"
 msgstr ""
 
-#: yourls-link-creator.php:379 yourls-link-creator.php:767
+#: yourls-link-creator.php:384 yourls-link-creator.php:784
 msgid "optional keyword"
 msgstr ""
 
-#: yourls-link-creator.php:388
+#: yourls-link-creator.php:393
 msgid "There is no shortlink to delete"
 msgstr ""
 
-#: yourls-link-creator.php:497
+#: yourls-link-creator.php:504
 msgid "No posts to check."
 msgstr ""
 
-#: yourls-link-creator.php:519
+#: yourls-link-creator.php:531
 msgid "Could not connect to the YOURLS server."
 msgstr ""
 
-#: yourls-link-creator.php:637
+#: yourls-link-creator.php:654
 msgid "You have not entered any API information."
 msgstr ""
 
-#: yourls-link-creator.php:657
+#: yourls-link-creator.php:674
 msgid "There are no keys to convert."
 msgstr ""
 
-#: yourls-link-creator.php:696
+#: yourls-link-creator.php:713
 msgid "YOURLS Settings"
 msgstr ""
 
-#: yourls-link-creator.php:723
+#: yourls-link-creator.php:740
 msgid "YOURLS Shortlink"
 msgstr ""
 
-#: yourls-link-creator.php:925
+#: yourls-link-creator.php:942
 msgid "YOURLS Link Creator Settings"
 msgstr ""
 
-#: yourls-link-creator.php:934
+#: yourls-link-creator.php:951
 msgid "Below are the basic settings for the YOURLS creator"
 msgstr ""
 
-#: yourls-link-creator.php:955
+#: yourls-link-creator.php:972
 msgid "YOURLS Custom URL"
 msgstr ""
 
-#: yourls-link-creator.php:958
-msgid "Actual URL only. Omit the http://"
+#: yourls-link-creator.php:975
+msgid "Enter your custom YOURLS URL"
 msgstr ""
 
-#: yourls-link-creator.php:963
+#: yourls-link-creator.php:980
 msgid "YOURLS API Signature Key"
 msgstr ""
 
-#: yourls-link-creator.php:966
+#: yourls-link-creator.php:983
 msgid "Found in the tools section on your YOURLS admin page."
 msgstr ""
 
-#: yourls-link-creator.php:971
+#: yourls-link-creator.php:988
 msgid "Auto generate links"
 msgstr ""
 
-#: yourls-link-creator.php:974
+#: yourls-link-creator.php:991
 msgid "Create a YOURLS link whenever a post is saved."
 msgstr ""
 
-#: yourls-link-creator.php:979
+#: yourls-link-creator.php:996
 msgid "Use YOURLS for Shortlink"
 msgstr ""
 
-#: yourls-link-creator.php:982
+#: yourls-link-creator.php:999
 msgid "Use the YOURLS link wherever wp_shortlink is fired"
 msgstr ""
 
-#: yourls-link-creator.php:987
+#: yourls-link-creator.php:1004
 msgid "Display on Custom Post Types"
 msgstr ""
 
-#: yourls-link-creator.php:990
+#: yourls-link-creator.php:1007
 msgid "Display the YOURLS creator on public custom post types"
 msgstr ""
 
-#: yourls-link-creator.php:995
+#: yourls-link-creator.php:1012
 msgid "Select the post types to include"
 msgstr ""
 
-#: yourls-link-creator.php:1002
+#: yourls-link-creator.php:1019
 msgid "Save Changes"
 msgstr ""
 
-#: yourls-link-creator.php:1027
+#: yourls-link-creator.php:1044
 msgid "About the Plugin"
 msgstr ""
 
-#: yourls-link-creator.php:1029
+#: yourls-link-creator.php:1046
 msgid "plugin support form"
 msgstr ""
 
-#: yourls-link-creator.php:1029
+#: yourls-link-creator.php:1046
 msgid "for bugs or feature requests."
 msgstr ""
 
-#: yourls-link-creator.php:1030
+#: yourls-link-creator.php:1047
 msgid "<strong>Enjoy the plugin?</strong>"
 msgstr ""
 
-#: yourls-link-creator.php:1031
+#: yourls-link-creator.php:1048
 msgid "Tweet about it"
 msgstr ""
 
-#: yourls-link-creator.php:1031
+#: yourls-link-creator.php:1048
 msgid "and consider donating."
 msgstr ""
 
-#: yourls-link-creator.php:1032
+#: yourls-link-creator.php:1049
 msgid ""
 "<strong>Donate:</strong> A lot of hard work goes into building plugins - "
 "support your open source developers. Include your twitter username and I'll "
 "send you a shout out for your generosity. Thank you!"
 msgstr ""
 
-#: yourls-link-creator.php:1045
+#: yourls-link-creator.php:1062
 msgid "Data Options:"
 msgstr ""
 
-#: yourls-link-creator.php:1047
+#: yourls-link-creator.php:1064
 msgid ""
 "Click the button below to refresh the click count data for all posts with a "
 "YOURLS link."
 msgstr ""
 
-#: yourls-link-creator.php:1049
+#: yourls-link-creator.php:1066
 msgid "Refresh Click Counts"
 msgstr ""
 
-#: yourls-link-creator.php:1053
+#: yourls-link-creator.php:1070
 msgid "Using Ozh's plugin? Click here to convert the existing meta keys"
 msgstr ""
 
-#: yourls-link-creator.php:1054
+#: yourls-link-creator.php:1071
 msgid "Convert Meta Keys"
 msgstr ""
 
-#: yourls-link-creator.php:1069
+#: yourls-link-creator.php:1086
 msgid "Links:"
 msgstr ""
 
-#: yourls-link-creator.php:1072
+#: yourls-link-creator.php:1089
 msgid "YOURLS homepage"
 msgstr ""
 
-#: yourls-link-creator.php:1073
+#: yourls-link-creator.php:1090
 msgid "Plugin on WP.org"
 msgstr ""
 
-#: yourls-link-creator.php:1074
+#: yourls-link-creator.php:1091
 msgid "Plugin on GitHub"
 msgstr ""
 
-#: yourls-link-creator.php:1075
+#: yourls-link-creator.php:1092
 msgid "Support Forum"
 msgstr ""

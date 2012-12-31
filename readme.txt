@@ -5,7 +5,7 @@ Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.0
 Tested up to: 3.5
-Stable tag: 1.06
+Stable tag: 1.07
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,10 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 == Changelog ==
+
+= 1.07 =
+* better sanitizing of personal YOURLS URL
+* code cleanup
 
 = 1.06 =
 * included template tag for theme use. (See FAQs for usage)

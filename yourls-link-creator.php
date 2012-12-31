@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.07
+Version: 1.08
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -27,7 +27,7 @@ if(!defined('YOURLS_BASE'))
 	define('YOURLS_BASE', plugin_basename(__FILE__) );
 
 if(!defined('YOURS_VER'))
-	define('YOURS_VER', '1.07');
+	define('YOURS_VER', '1.08');
 
 // Start up the engine
 class YOURLSCreator
@@ -719,19 +719,24 @@ class YOURLSCreator
 		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
 
-		// check post status, only display on published posts
+		// check post status, only display on posts with URLs
 		$status		= get_post_status();
-		if ( $status !== 'publish' )
-			return;
+		if ( $status == 'publish' ||
+			 $status == 'future' ||
+			 $status == 'pending'
+			)
+		{
 
-		// now set array of post types
-		$customs	= isset($yourls_options['typ']) ? $yourls_options['typ'] : false;
-		$builtin	= array('post' => 'post', 'page' => 'page');
 
-		$types		= $customs !== false ? array_merge($customs, $builtin) : $builtin;
+			// now set array of post types
+			$customs	= isset($yourls_options['typ']) ? $yourls_options['typ'] : false;
+			$builtin	= array('post' => 'post', 'page' => 'page');
 
-		if ( in_array( $page,  $types ) && 'side' == $context )
-			add_meta_box('yourls-post-display', __('YOURLS Shortlink', 'wpyourls'), array(&$this, 'yourls_post_display'), $page, $context, 'high');
+			$types		= $customs !== false ? array_merge($customs, $builtin) : $builtin;
+
+			if ( in_array( $page,  $types ) && 'side' == $context )
+				add_meta_box('yourls-post-display', __('YOURLS Shortlink', 'wpyourls'), array(&$this, 'yourls_post_display'), $page, $context, 'high');
+		}
 	}
 
 

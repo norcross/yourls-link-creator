@@ -48,9 +48,9 @@ class YOURLSCreator
 		add_action		( 'wp_ajax_delete_yourls',		array( $this, 'delete_yourls'		)			);
 		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
 		add_action		( 'wp_ajax_clicks_yourls',		array( $this, 'clicks_yourls'		)			);
-		add_action		( 'wp_ajax_key_change',			array( $this, 'key_change'	 	 	)			);
+		add_action		( 'wp_ajax_key_change',			array( $this, 'key_change'			)			);
 		add_action		( 'yourls_cron',				array( $this, 'yourls_click_cron'	)			);
-		add_action		( 'save_post',					array( $this, 'yourls_on_save'		) 			);
+		add_action		( 'transition_post_status',		array( $this, 'yourls_on_save'		), 10,  3	);
 		add_action		( 'wp_head',					array( $this, 'shortlink_meta'		) 			);
 		add_action		( 'manage_posts_custom_column',	array( $this, 'display_columns'		), 10,	2	);
 		add_filter		( 'manage_posts_columns',		array( $this, 'register_columns'	)			);
@@ -210,39 +210,33 @@ class YOURLSCreator
 	 * @return YOURLSCreator
 	 */
 
-	public function yourls_on_save($post_id) {
+	public function yourls_on_save( $new_status, $old_status, $post ) {
+		if ( 'publish' != $new_status )
+			return;
 
 		// only fire when settings have been filled out
 		$yourls_options = get_option('yourls_options');
-		$status			= get_post_status( $post_id );
 
-		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+		if( empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
 
 		// bail if user hasn't checked the box
 		if(	!isset($yourls_options['sav']) )
-			return;
-
-		// bail on autosave
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-			return;
-
-		// bail on anything other than publish
-		if ('publish' !== $status)
-			return;
+		   	return;
 
 		// permissions and all
-		if ( !current_user_can( 'edit_post', $post_id ) )
+		// if scheduled, wp already handled this
+		if ( 'future' != $old_status && !current_user_can( 'edit_post', $post->ID ) )
 			return;
 
 		// check for a link
-		$exist	= get_post_meta( $post_id, '_yourls_url', true );
+		$exist	= get_post_meta( $post->ID, '_yourls_url', true );
 
 		if (!empty($exist) )
 			return;
 
 		//verify post is not a revision
-		if ( !wp_is_post_revision( $post_id ) ) {
+		if ( !wp_is_post_revision( $post->ID ) ) {
 
 			// process YOURLS call
 			$clean_url	= str_replace('http://', '', $yourls_options['url']);
@@ -251,7 +245,7 @@ class YOURLSCreator
 			$api_key	= $yourls_options['api'];
 			$action		= 'shorturl';
 			$format		= 'JSON';
-			$post_url	= get_permalink($post_id);
+			$post_url	= get_permalink($post->ID);
 
 			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&url='.$post_url.'&format='.$format.'';
 
@@ -269,7 +263,7 @@ class YOURLSCreator
 				return;
 
 			// everything worked, so make a link
-			update_post_meta($post_id, '_yourls_url', $data);
+			update_post_meta($post->ID, '_yourls_url', $data);
 
 		}
 

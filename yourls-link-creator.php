@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.06
+Version: 1.07
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -27,7 +27,7 @@ if(!defined('YOURLS_BASE'))
 	define('YOURLS_BASE', plugin_basename(__FILE__) );
 
 if(!defined('YOURS_VER'))
-	define('YOURS_VER', '1.06');
+	define('YOURS_VER', '1.07');
 
 // Start up the engine
 class YOURLSCreator
@@ -239,7 +239,9 @@ class YOURLSCreator
 		if ( !wp_is_post_revision( $post->ID ) ) {
 
 			// process YOURLS call
-			$clean_url	= str_replace('http://', '', $yourls_options['url']);
+			$base_url	= $yourls_options['url'];
+			$short_url	= str_replace('http://', '', $base_url);
+			$short_url	= trim($short_url, '/');
 
 			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
 			$api_key	= $yourls_options['api'];
@@ -295,9 +297,12 @@ class YOURLSCreator
 
 		// go get us a swanky new short URL if we dont have one
 		if(empty($yourls_exist) ) {
-			$clean_url	= str_replace('http://', '', $yourls_options['url']);
 
-			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+			$base_url	= $yourls_options['url'];
+			$short_url	= str_replace('http://', '', $base_url);
+			$short_url	= trim($short_url, '/');
+
+			$yourls		= 'http://'.$short_url.'/yourls-api.php';
 			$api_key	= $yourls_options['api'];
 			$action		= 'shorturl';
 			$format		= 'JSON';
@@ -407,9 +412,11 @@ class YOURLSCreator
 
 		// gimme some click data honey
 		if(!empty($yourls_url) ) {
-			$clean_url	= str_replace('http://', '', $yourls_options['url']);
+			$base_url	= $yourls_options['url'];
+			$short_url	= str_replace('http://', '', $base_url);
+			$short_url	= trim($short_url, '/');
 
-			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+			$yourls		= 'http://'.$short_url.'/yourls-api.php';
 			$api_key	= $yourls_options['api'];
 			$action		= 'url-stats';
 			$format		= 'json';
@@ -497,8 +504,13 @@ class YOURLSCreator
 		foreach ($yourls_posts as $post) :
 
 			$yourls_url = get_post_meta($post, '_yourls_url', true);
-			$clean_url	= str_replace('http://', '', $yourls_options['url']);
-			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+
+			$base_url	= $yourls_options['url'];
+			$short_url	= str_replace('http://', '', $base_url);
+			$short_url	= trim($short_url, '/');
+
+			$yourls		= 'http://'.$short_url.'/yourls-api.php';
+
 			$api_key	= $yourls_options['api'];
 			$action		= 'url-stats';
 			$format		= 'json';
@@ -584,8 +596,13 @@ class YOURLSCreator
 		foreach ($yourls_posts as $post) : setup_postdata($post);
 
 			$yourls_url = get_post_meta($post, '_yourls_url', true);
-			$clean_url	= str_replace('http://', '', $yourls_options['url']);
-			$yourls		= 'http://'.$clean_url.'/yourls-api.php';
+
+			$base_url	= $yourls_options['url'];
+			$short_url	= str_replace('http://', '', $base_url);
+			$short_url	= trim($short_url, '/');
+
+			$yourls		= 'http://'.$short_url.'/yourls-api.php';
+
 			$api_key	= $yourls_options['api'];
 			$action		= 'url-stats';
 			$format		= 'json';
@@ -949,7 +966,7 @@ class YOURLSCreator
 						<th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL', 'wpyourls') ?></label></th>
 						<td>
 						<input type="text" class="regular-text" value="<?php echo $yourls_url; ?>" id="yourls_url" name="yourls_options[url]">
-						<p class="description"><?php _e('Actual URL only. Omit the http://', 'wpyourls') ?></p>
+						<p class="description"><?php _e('Enter your custom YOURLS URL', 'wpyourls') ?></p>
 						</td>
 					</tr>
 

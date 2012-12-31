@@ -7,20 +7,20 @@ Version: 1.06
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
-    Copyright 2012 Andrew Norcross
+	Copyright 2012 Andrew Norcross
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as
-    published by the Free Software Foundation.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License, version 2, as
+	published by the Free Software Foundation.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 if(!defined('YOURLS_BASE'))
@@ -48,7 +48,7 @@ class YOURLSCreator
 		add_action		( 'wp_ajax_delete_yourls',		array( $this, 'delete_yourls'		)			);
 		add_action		( 'wp_ajax_stats_yourls',		array( $this, 'stats_yourls'		)			);
 		add_action		( 'wp_ajax_clicks_yourls',		array( $this, 'clicks_yourls'		)			);
-		add_action      ( 'wp_ajax_key_change',     	array( $this, 'key_change'      	)			);
+		add_action		( 'wp_ajax_key_change',			array( $this, 'key_change'	 	 	)			);
 		add_action		( 'yourls_cron',				array( $this, 'yourls_click_cron'	)			);
 		add_action		( 'save_post',					array( $this, 'yourls_on_save'		) 			);
 		add_action		( 'wp_head',					array( $this, 'shortlink_meta'		) 			);
@@ -103,7 +103,7 @@ class YOURLSCreator
 	 * @return YOURLSCreator
 	 */
 
-    public function quick_link( $links, $file ) {
+	public function quick_link( $links, $file ) {
 
 		static $this_plugin;
 
@@ -111,13 +111,13 @@ class YOURLSCreator
 			$this_plugin = plugin_basename(__FILE__);
 		}
 
-    	// check to make sure we are on the correct plugin
-    	if ($file == $this_plugin) {
+		// check to make sure we are on the correct plugin
+		if ($file == $this_plugin) {
 
 			$settings_link	= '<a href="'.menu_page_url( 'yourls-settings', 0 ).'">'.__('Settings', 'wpyourls').'</a>';
 
-        	array_unshift($links, $settings_link);
-    	}
+			array_unshift($links, $settings_link);
+		}
 
 		return $links;
 
@@ -214,7 +214,7 @@ class YOURLSCreator
 
 		// only fire when settings have been filled out
 		$yourls_options = get_option('yourls_options');
-        $status			= get_post_status( $post_id );
+		$status			= get_post_status( $post_id );
 
 		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
 			return;
@@ -225,11 +225,11 @@ class YOURLSCreator
 
 		// bail on autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-        	return;
+			return;
 
-        // bail on anything other than publish
-        if ('publish' !== $status)
-        	return;
+		// bail on anything other than publish
+		if ('publish' !== $status)
+			return;
 
 		// permissions and all
 		if ( !current_user_can( 'edit_post', $post_id ) )
@@ -617,29 +617,29 @@ class YOURLSCreator
 
 	}
 
-    /**
-     * convert from Ozh (and Otto's) plugin
-     *
-     * @return YOURLSCreator
-     */
+	/**
+	 * convert from Ozh (and Otto's) plugin
+	 *
+	 * @return YOURLSCreator
+	 */
 
-    public function key_change() {
+	public function key_change() {
 
 		$yourls_options = get_option('yourls_options');
 
-        // set up return array for ajax responses
-        $ret = array();
+		// set up return array for ajax responses
+		$ret = array();
 
-        // run check for API info
+		// run check for API info
 		if(	empty($yourls_options['api']) || empty($yourls_options['url']) ) {
-            $ret['success'] = false;
-            $ret['errcode'] = 'API_MISSING';
-            $ret['message'] = __('You have not entered any API information.', 'wpyourls');
-            echo json_encode($ret);
-            die();
+			$ret['success'] = false;
+			$ret['errcode'] = 'API_MISSING';
+			$ret['message'] = __('You have not entered any API information.', 'wpyourls');
+			echo json_encode($ret);
+			die();
 		}
 
-        // set query to look for existing keys
+		// set query to look for existing keys
 		$args = array (
 			'fields'		=> 'ids',
 			'post_type'		=> 'any',
@@ -650,41 +650,41 @@ class YOURLSCreator
 		$yourls_posts = get_posts( $args );
 		$yourls_count = count($yourls_posts);
 
-        // return if no keys found
-        if( $yourls_count == 0 ) {
-            $ret['success'] = false;
-            $ret['errcode'] = 'KEY_MISSING';
-            $ret['message'] = $ret['message'] = __('There are no keys to convert.', 'wpyourls');
-            echo json_encode($ret);
-            die();
-        }
+		// return if no keys found
+		if( $yourls_count == 0 ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'KEY_MISSING';
+			$ret['message'] = $ret['message'] = __('There are no keys to convert.', 'wpyourls');
+			echo json_encode($ret);
+			die();
+		}
 
-        // set up SQL query
-        global $wpdb;
+		// set up SQL query
+		global $wpdb;
 
-        // set keys for swap
-        $key_old  = 'yourls_shorturl';
-        $key_new  = '_yourls_url';
+		// set keys for swap
+		$key_old  = 'yourls_shorturl';
+		$key_new  = '_yourls_url';
 
-        // run SQL query
-        $key_query = $wpdb->query (
-            $wpdb->prepare("
-                UPDATE $wpdb->postmeta
-                SET meta_key = REPLACE (meta_key, %s, %s )",
-                $key_old, $key_new
-            )
-        );
+		// run SQL query
+		$key_query = $wpdb->query (
+			$wpdb->prepare("
+				UPDATE $wpdb->postmeta
+				SET meta_key = REPLACE (meta_key, %s, %s )",
+				$key_old, $key_new
+			)
+		);
 
-        // return if keys found and conversion is done
-        if( $key_query > 0 ) {
-            $ret['success'] = true;
-            $ret['updated'] = $key_query;
-            $ret['message'] = sprintf( _n('Success! %d key has been updated.', 'Success! %d keys have been updated.', $key_query, 'wpyourls'), $key_query );
-            echo json_encode($ret);
-            die();
-        }
+		// return if keys found and conversion is done
+		if( $key_query > 0 ) {
+			$ret['success'] = true;
+			$ret['updated'] = $key_query;
+			$ret['message'] = sprintf( _n('Success! %d key has been updated.', 'Success! %d keys have been updated.', $key_query, 'wpyourls'), $key_query );
+			echo json_encode($ret);
+			die();
+		}
 
-    }
+	}
 
 	/**
 	 * build out settings page and meta boxes
@@ -693,7 +693,7 @@ class YOURLSCreator
 	 */
 
 	public function yourls_settings() {
-	    add_submenu_page('options-general.php', __('YOURLS Settings', 'wpyourls'), __('YOURLS Settings', 'wpyourls'), 'manage_options', 'yourls-settings', array( $this, 'yourls_settings_display' ));
+		add_submenu_page('options-general.php', __('YOURLS Settings', 'wpyourls'), __('YOURLS Settings', 'wpyourls'), 'manage_options', 'yourls-settings', array( $this, 'yourls_settings_display' ));
 	}
 
 	/**
@@ -798,7 +798,7 @@ class YOURLSCreator
 			return $shortlink;
 
 		// we got this far? good. send it out
-	    return $yourls_link;
+		return $yourls_link;
 	}
 
 	/**
@@ -921,23 +921,23 @@ class YOURLSCreator
 		?>
 
 		<div class="wrap">
-    	<div class="icon32" id="icon-yourls"><br></div>
+		<div class="icon32" id="icon-yourls"><br></div>
 		<h2><?php _e('YOURLS Link Creator Settings', 'wpyourls') ?></h2>
 
-        <div id="poststuff" class="metabox-holder has-right-sidebar">
+		<div id="poststuff" class="metabox-holder has-right-sidebar">
 		<?php
 		echo $this->settings_side();
 		echo $this->settings_open();
 		?>
 
-           	<div class="yourls-form-text">
-           	<p><?php _e('Below are the basic settings for the YOURLS creator', 'wpyourls') ?></p>
-            </div>
+		   	<div class="yourls-form-text">
+		   	<p><?php _e('Below are the basic settings for the YOURLS creator', 'wpyourls') ?></p>
+			</div>
 
-            <div class="yourls-form-options">
-	            <form method="post" action="options.php">
-			    <?php
-                settings_fields( 'yourls_options' );
+			<div class="yourls-form-options">
+				<form method="post" action="options.php">
+				<?php
+				settings_fields( 'yourls_options' );
 				$yourls_options	= get_option('yourls_options');
 
 				$yourls_url		= (isset($yourls_options['url'])	? $yourls_options['url']	: ''		);
@@ -949,57 +949,57 @@ class YOURLSCreator
 
 				?>
 
-                <table class="form-table yourls-table">
+				<table class="form-table yourls-table">
 				<tbody>
-                	<tr>
-                        <th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL', 'wpyourls') ?></label></th>
-                        <td>
+					<tr>
+						<th><label for="yourls_options[url]"><?php _e('YOURLS Custom URL', 'wpyourls') ?></label></th>
+						<td>
 						<input type="text" class="regular-text" value="<?php echo $yourls_url; ?>" id="yourls_url" name="yourls_options[url]">
-                        <p class="description"><?php _e('Actual URL only. Omit the http://', 'wpyourls') ?></p>
+						<p class="description"><?php _e('Actual URL only. Omit the http://', 'wpyourls') ?></p>
 						</td>
-                    </tr>
+					</tr>
 
-                	<tr>
-                        <th><label for="yourls_options[api]"><?php _e('YOURLS API Signature Key', 'wpyourls') ?></label></th>
-                        <td>
+					<tr>
+						<th><label for="yourls_options[api]"><?php _e('YOURLS API Signature Key', 'wpyourls') ?></label></th>
+						<td>
 						<input type="text" class="regular-text" value="<?php echo $yourls_api; ?>" id="yourls_api" name="yourls_options[api]">
-                        <p class="description"><?php _e('Found in the tools section on your YOURLS admin page.', 'wpyourls') ?></p>
+						<p class="description"><?php _e('Found in the tools section on your YOURLS admin page.', 'wpyourls') ?></p>
 						</td>
-                    </tr>
+					</tr>
 
-                	<tr>
-                        <th><label for="yourls_options[sav]"><?php _e('Auto generate links', 'wpyourls') ?></label></th>
-                        <td>
+					<tr>
+						<th><label for="yourls_options[sav]"><?php _e('Auto generate links', 'wpyourls') ?></label></th>
+						<td>
 						<input type="checkbox" name="yourls_options[sav]" id="yourls_sav" value="true" <?php checked( $yourls_sav, 'true' ); ?> />
-                        <span class="description"><?php _e('Create a YOURLS link whenever a post is saved.', 'wpyourls') ?></span>
+						<span class="description"><?php _e('Create a YOURLS link whenever a post is saved.', 'wpyourls') ?></span>
 						</td>
-                    </tr>
+					</tr>
 
-                	<tr>
-                        <th><label for="yourls_options[sht]"><?php _e('Use YOURLS for Shortlink', 'wpyourls') ?></label></th>
-                        <td>
+					<tr>
+						<th><label for="yourls_options[sht]"><?php _e('Use YOURLS for Shortlink', 'wpyourls') ?></label></th>
+						<td>
 						<input type="checkbox" name="yourls_options[sht]" id="yourls_sht" value="true" <?php checked( $yourls_sht, 'true' ); ?> />
-                        <span class="description"><?php _e('Use the YOURLS link wherever wp_shortlink is fired', 'wpyourls') ?></span>
+						<span class="description"><?php _e('Use the YOURLS link wherever wp_shortlink is fired', 'wpyourls') ?></span>
 						</td>
-                    </tr>
+					</tr>
 
-                	<tr>
-                        <th><label for="yourls_options[cpt]"><?php _e('Display on Custom Post Types', 'wpyourls') ?></label></th>
-                        <td>
+					<tr>
+						<th><label for="yourls_options[cpt]"><?php _e('Display on Custom Post Types', 'wpyourls') ?></label></th>
+						<td>
 						<input type="checkbox" name="yourls_options[cpt]" id="yourls_cpt" value="true" <?php checked( $yourls_cpt, 'true' ); ?> />
-                        <span class="description"><?php _e('Display the YOURLS creator on public custom post types', 'wpyourls') ?></span>
+						<span class="description"><?php _e('Display the YOURLS creator on public custom post types', 'wpyourls') ?></span>
 						</td>
-                    </tr>
+					</tr>
 
-                	<tr class="secondary yourls-types" style="display:none;">
-                        <th><label for="yourls_options[typ]"><?php _e('Select the post types to include', 'wpyourls') ?></label></th>
-                        <td><?php echo $this->post_types($yourls_typ); ?></td>
-                    </tr>
+					<tr class="secondary yourls-types" style="display:none;">
+						<th><label for="yourls_options[typ]"><?php _e('Select the post types to include', 'wpyourls') ?></label></th>
+						<td><?php echo $this->post_types($yourls_typ); ?></td>
+					</tr>
 
 				</tbody>
-                </table>
+				</table>
 
-	    		<p><input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" /></p>
+				<p><input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" /></p>
 				</form>
 
 			</div>
@@ -1011,15 +1011,15 @@ class YOURLSCreator
 
 	<?php }
 
-    /**
-     * Some extra stuff for the settings page
-     *
-     * this is just to keep the area cleaner
-     *
-     * @return YOURLSCreator
-     */
+	/**
+	 * Some extra stuff for the settings page
+	 *
+	 * this is just to keep the area cleaner
+	 *
+	 * @return YOURLSCreator
+	 */
 
-    public function settings_side() { ?>
+	public function settings_side() { ?>
 
 		<div id="side-info-column" class="inner-sidebar">
 			<div class="meta-box-sortables">
@@ -1074,14 +1074,14 @@ class YOURLSCreator
 						<li><a href="https://github.com/norcross/yourls-link-creator/" target="_blank"><?php _e('Plugin on GitHub', 'wpyourls'); ?></a></li>
 						<li><a href="http://wordpress.org/support/plugin/yourls-link-creator/" target="_blank"><?php _e('Support Forum', 'wpyourls'); ?></a><li>
 
-            			</ul>
+						</ul>
 					</div>
 				</div>
 			</div>
 
 		</div> <!-- // #side-info-column .inner-sidebar -->
 
-    <?php }
+	<?php }
 
 	public function settings_open() { ?>
 
@@ -1091,7 +1091,7 @@ class YOURLSCreator
 					<div id="about" class="postbox">
 						<div class="inside">
 
-    <?php }
+	<?php }
 
 	public function settings_close() { ?>
 
@@ -1102,7 +1102,7 @@ class YOURLSCreator
 			</div>
 		</div>
 
-    <?php }
+	<?php }
 
 /// end class
 }

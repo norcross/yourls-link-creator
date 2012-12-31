@@ -162,9 +162,9 @@ class YOURLSCreator
 
 		$yourls_options = get_option('yourls_options');
 
-		$customs	= $yourls_options['typ'];
+		$customs	= array_key_exists( 'typ', $yourls_options ) ? $yourls_options['typ'] : '';
 		$builtin	= array('post' => 'post', 'page' => 'page');
-		$types		= !empty($yourls_options['typ']) ? array_merge($customs, $builtin) : $builtin;
+		$types		= !empty($customs) ? array_merge($customs, $builtin) : $builtin;
 		$screen		= $current_screen->post_type;
 
 		if ( !in_array( $screen,  $types ) )

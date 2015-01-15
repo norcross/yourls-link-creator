@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 1.08
+Version: 1.09
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -27,7 +27,7 @@ if(!defined('YOURLS_BASE'))
 	define('YOURLS_BASE', plugin_basename(__FILE__) );
 
 if(!defined('YOURS_VER'))
-	define('YOURS_VER', '1.08');
+	define('YOURS_VER', '1.09');
 
 // Start up the engine
 class YOURLSCreator
@@ -116,7 +116,7 @@ class YOURLSCreator
 
 			$settings_link	= '<a href="'.menu_page_url( 'yourls-settings', 0 ).'">'.__('Settings', 'wpyourls').'</a>';
 
-			array_unshift($links, $settings_link);
+			array_push($links, $settings_link);
 		}
 
 		return $links;
@@ -158,16 +158,16 @@ class YOURLSCreator
 
 	public function register_columns( $columns ) {
 
-		$current_screen = get_current_screen();
+		global $post_type_object;
 
 		$yourls_options = get_option('yourls_options');
 
 		$customs	= array_key_exists( 'typ', $yourls_options ) ? $yourls_options['typ'] : '';
 		$builtin	= array('post' => 'post', 'page' => 'page');
 		$types		= !empty($customs) ? array_merge($customs, $builtin) : $builtin;
-		$screen		= $current_screen->post_type;
+		$screen		= $post_type_object->name;
 
-		if ( !in_array( $screen,  $types ) )
+		if ( !in_array( $screen, $types ) )
 			return $columns;
 
 		// get display for column icon
@@ -286,10 +286,10 @@ class YOURLSCreator
 		// only fire when settings have been filled out
 		$yourls_options = get_option('yourls_options');
 
-		if(	empty($yourls_options['api']) || empty($yourls_options['url']) )
+		if ( empty( $yourls_options['api'] ) || empty( $yourls_options['url'] ) )
 			return;
 
-		if (!current_user_can('edit_post', $postID))
+		if ( !current_user_can( 'edit_post', $postID ) )
 			return;
 
 		// check for existing YOURLS
@@ -307,9 +307,10 @@ class YOURLSCreator
 			$action		= 'shorturl';
 			$format		= 'JSON';
 			$keyword	= $custom_kw;
+                        $title          = get_the_title( $postID );
 			$post_url	= get_permalink($postID);
 
-			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&url='.$post_url.'&format='.$format.'&keyword='.$keyword.'';
+			$yourls_r	= $yourls.'?signature='.$api_key.'&action='.$action.'&url='.$post_url.'&format='.$format.'&keyword='.$keyword.'?title='.$title.'';
 
 			$response	= wp_remote_get( $yourls_r );
 
@@ -317,11 +318,10 @@ class YOURLSCreator
 
 			if( is_wp_error( $response ) ) {
 				// we don't want to interfere with the save process. store message and return
-				$ret['success']	= false;
-				$ret['message'] = __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
-				$ret['error']	= __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
-				$ret['errcode']	= 'NOCONNECT';
-				$ret['process'] = 'remote post failed';
+				$ret['success']		= false;
+				$ret['message'] 	= __('There was an error contacting the YOURLS API. Please try again.', 'wpyourls');
+				$ret['error']		= __('no connection made', 'wpyourls');
+				$ret['errcode']		= 'NOCONNECT';
 				echo json_encode($ret);
 				die();
 
@@ -330,18 +330,19 @@ class YOURLSCreator
 			}
 
 			if(!$data) {
-				$ret['success'] = false;
-				$ret['error']	= __('Unknown error', 'wpyourls');
-				$ret['errcode']	= 'NORETURN';
+				$ret['success'] 	= false;
+				$ret['message'] 	= __('The YOURLS API could did not return a valid URL. Please try again.', 'wpyourls');
+				$ret['error']		= __('no return data', 'wpyourls');
+				$ret['errcode']		= 'NORETURN';
 				echo json_encode($ret);
 				die();
 			}
 
 			if($data){
-				$ret['success'] = true;
-				$ret['message'] = __('You have created a new YOURLS link', 'wpyourls');
-				$ret['link']	= esc_url($data);
-				$ret['inputs']	= '<p class="yourls-exist-block"><input id="yourls-link" title="click to highlight" class="yourls-link-input" type="text" name="yourls-link" value="'.esc_url($data).'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" /><input type="button" class="yourls-delete" value="'. __('Delete Link', 'wpyourls').'" ></p><p class="howto"> '. __('Your YOURLS link has generated 0 clicks.', 'wpyourls') .'</p>';
+				$ret['success'] 	= true;
+				$ret['message'] 	= __('You have created a new YOURLS link', 'wpyourls');
+				$ret['link']		= esc_url($data);
+				$ret['yourlsbox']	= '<p class="yourls-exist-block"><input id="yourls-link" title="click to highlight" class="yourls-link-input" type="text" name="yourls-link" value="'.esc_url($data).'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" /><input type="button" class="yourls-delete" value="'. __('Delete Link', 'wpyourls').'" ></p><p class="howto"> '. __('Your YOURLS link has generated 0 clicks.', 'wpyourls') .'</p>';
 
 				update_post_meta($postID, '_yourls_url', $data);
 				echo json_encode($ret);
@@ -373,9 +374,9 @@ class YOURLSCreator
 		// go get us a swanky new short URL if we dont have one
 		if(!empty($yourls_exist) ) {
 
-			$ret['success'] = true;
-			$ret['message'] = __('The shortlink has been removed from WordPress', 'wpyourls');
-			$ret['inputs']	= '<p class="yourls-create-block"><input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="" tabindex="501" /><img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'"><input type="button" class="button-secondary yourls-api" id="yourls-get" type="text" name="yourls-get" value="Get YOURLS" tabindex="502" /><span class="howto">' . __('optional keyword', 'wpyourls') . '</span></p>';
+			$ret['success'] 	= true;
+			$ret['message'] 	= __('The shortlink has been removed from WordPress', 'wpyourls');
+			$ret['yourlsbox']	= '<p class="yourls-create-block"><input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="" tabindex="501" /><img class="ajax-loading btn-yourls" src="'.plugins_url('/lib/img/wpspin-light.gif', __FILE__).'"><input type="button" class="button-secondary yourls-api" id="yourls-get" type="text" name="yourls-get" value="Get YOURLS" tabindex="502" /><span class="howto">' . __('optional keyword', 'wpyourls') . '</span></p>';
 
 			delete_post_meta($postID, '_yourls_url');
 			echo json_encode($ret);
@@ -383,9 +384,9 @@ class YOURLSCreator
 
 		} else {
 
-			$ret['success'] = false;
-			$ret['error']	= __('There is no shortlink to delete', 'wpyourls');
-			$ret['errcode']	= 'NODELETE';
+			$ret['success'] 	= false;
+			$ret['error']		= __('There is no shortlink to delete', 'wpyourls');
+			$ret['errcode']		= 'NODELETE';
 			echo json_encode($ret);
 			die();
 
@@ -1125,3 +1126,4 @@ class YOURLSCreator
 
 // Instantiate our class
 $YOURLSCreator = new YOURLSCreator();
+

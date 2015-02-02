@@ -37,7 +37,7 @@ class YOURLSCreator_Admin
 		add_action( 'admin_enqueue_scripts',        array( $this, 'scripts_styles'      ),  10      );
 		add_action( 'add_meta_boxes',               array( $this, 'yourls_metabox'      ),  11      );
 		add_action( 'yourls_cron',                  array( $this, 'yourls_click_cron'   )           );
-		add_action( 'wp_transition_post_status',    array( $this, 'yourls_on_save'      ),  10, 3   );
+		add_action( 'save_post',                    array( $this, 'yourls_on_save'      )           );
 		add_action( 'manage_posts_custom_column',   array( $this, 'display_columns'     ),  10, 2   );
 		add_filter( 'manage_posts_columns',         array( $this, 'register_columns'    )           );
 		add_filter( 'post_row_actions',             array( $this, 'yourls_row_action'   ),  10, 2   );
@@ -176,21 +176,24 @@ class YOURLSCreator_Admin
 	/**
 	 * Create yourls link on publish if one doesn't exist
 	 *
-	 * @param  string  $new_status  New post status after an update.
-	 * @param  string  $old_status  Previous post status.
-	 * @param  object  $post        post object
+	 * @param  integer $post_id [description]
 	 *
 	 * @return void
 	 */
-	public function yourls_on_save( $new_status, $old_status, $post ) {
+	public function yourls_on_save( $post_id ) {
+
+		// run various checks to make sure we aren't doing anything weird
+		if ( YOURLSCreator_Helper::meta_save_check( $post_id ) ) {
+			return $post_id;
+		}
 
 		// bail if we aren't working with a published post
-		if ( 'publish' != $new_status ) {
+		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'future' ) ) ) {
 			return;
 		}
 
 		// make sure we're working with an approved post type
-		if ( ! in_array( $post->post_type, YOURLSCreator_Helper::get_yourls_types() ) ) {
+		if ( ! in_array( get_post_type( $post_id ), YOURLSCreator_Helper::get_yourls_types() ) ) {
 			return;
 		}
 
@@ -204,33 +207,37 @@ class YOURLSCreator_Admin
 		   	return;
 		}
 
-		// permissions and all
-		// if scheduled, wp already handled this
-		if ( 'future' != $old_status && ! current_user_can( 'edit_post', $post->ID ) ) {
-			return;
-		}
-
 		// check for a link and bail if one exists
-		if ( false !== $exist = YOURLSCreator_Helper::get_yourls_meta( $post->ID ) ) {
+		if ( false !== $exist = YOURLSCreator_Helper::get_yourls_meta( $post_id ) ) {
 			return;
 		}
 
-		// verify post is not a revision
-		if ( ! wp_is_post_revision( $post->ID ) ) {
+		// get my post URL and title
+		$url    = get_permalink( $post_id );
+		$title  = get_the_title( $post_id );
 
-			// get my post URL
-			$url    = get_permalink( $post->ID );
+		// and optional keyword
+		$keywd  = ! empty( $_POST['yourls-keyw'] ) ? sanitize_text_field( $_POST['yourls-keyw'] ) : '';
 
-			// make the API call
-			$data   = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', array( 'url' => esc_url( $url ) ) );
+		// set my args for the API call
+		$args   = array( 'url' => esc_url( $url ), 'title' => esc_attr( $title ), 'keyword' => $keywd );
 
-			// bail if empty data or error received
-			if ( empty( $data ) || ! empty( $data['error'] ) ) {
-				continue;
-			}
+		// make the API call
+		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', $args );
 
-			// everything worked, so make a link
-			update_post_meta( $post->ID, '_yourls_url', $data );
+		// bail if empty data or error received
+		if ( empty( $build ) || false === $build['success'] ) {
+			return;
+		}
+
+		// we have done our error checking and we are ready to go
+		if( false !== $build['success'] && ! empty( $build['data']['shorturl'] ) ) {
+			// get my short URL
+			$shorturl   = esc_url( $build['data']['shorturl'] );
+
+			// update the post meta
+			update_post_meta( $post_id, '_yourls_url', $shorturl );
+			update_post_meta( $post_id, '_yourls_clicks', '0' );
 		}
 	}
 

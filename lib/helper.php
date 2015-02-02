@@ -466,6 +466,38 @@ class YOURLSCreator_Helper
 		return $clean;
 	}
 
+	/**
+	 * check permissions on saving meta data
+	 *
+	 * @param  integer $post_id [description]
+	 * @param  string  $cap     [description]
+	 * @return [type]           [description]
+	 */
+	public static function meta_save_check( $post_id = 0, $cap = 'edit_post' ) {
+
+		// Bail out if running an autosave
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return true;
+		}
+
+		// Bail out if running an ajax/
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return true;
+		}
+
+		// Bail out if running a cron */
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			return true;
+		}
+
+		// Bail out if user does not have permissions
+		if ( ! empty( $post_id ) && ! current_user_can( $cap, $post_id ) ) {
+			return $post_id;
+		}
+
+		// return false
+		return false;
+	}
 
 // end class
 }

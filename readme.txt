@@ -5,7 +5,7 @@ Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.6
 Tested up to: 4.1
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,9 +64,13 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 == Changelog ==
 
+= 2.0.2 =
+* fixed bug with creating link on post save
+
 = 2.0.1 =
 * added post title submission to API call
 * added option for using POST method instead of GET method to address API permission issues
+* nonce ALL THE THINGS
 
 = 2.0.0 =
 * COMPLETELY REFACTORED

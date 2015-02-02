@@ -3,9 +3,9 @@ Contributors: norcross
 Website Link: http://andrewnorcross.com/plugins/yourls-link-creator/
 Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
-Requires at least: 3.0
-Tested up to: 3.5
-Stable tag: 1.08
+Requires at least: 3.6
+Tested up to: 4.1
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,22 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 == Changelog ==
+
+= 2.0.1 =
+* added post title submission to API call
+* added option for using POST method instead of GET method to address API permission issues
+
+= 2.0.0 =
+* COMPLETELY REFACTORED
+* updated UI to match current WP setup
+* rewrote javascript for better security
+* added post action row items for creating and updating counts
+* added check for possible 404 return on YOURLS server
+* a whole lot more
+
+= 1.09 =
+* bugfixes related to certain hosting configurations
+* minor JS cleanup
 
 = 1.08 =
 * change to allow scheduled posts to process URL call. props @ethitter

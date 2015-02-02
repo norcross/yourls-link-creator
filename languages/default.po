@@ -1,209 +1,330 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wpyourls\n"
-"POT-Creation-Date: 2012-12-24 15:54-0500\n"
-"PO-Revision-Date: 2012-12-24 15:54-0500\n"
-"Last-Translator: Andrew Norcross <andrew@andrewnorcross.com>\n"
+"POT-Creation-Date: 2015-02-02 09:26-0500\n"
+"PO-Revision-Date: 2015-02-02 09:26-0500\n"
+"Last-Translator: Andrew Norcross <andrew.norcross@gmail.com>\n"
 "Language-Team: \n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.6.7\n"
 "X-Poedit-KeywordsList: _;__;_e;gettext;gettext_noop\n"
 "X-Poedit-Basepath: ../\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: lib\n"
 
-#: yourls-link-creator.php:117
-msgid "Settings"
-msgstr ""
+#: lib/admin.php:68
+msgid "Get Shortlink"
+msgstr "Get Shortlink"
 
-#: yourls-link-creator.php:144
-msgid "Shortlink:"
-msgstr ""
+#: lib/admin.php:69
+msgid "There was an error with your request."
+msgstr "There was an error with your request."
 
-#: yourls-link-creator.php:327 yourls-link-creator.php:328
-#: yourls-link-creator.php:440 yourls-link-creator.php:441
-msgid "There was an error contacting the YOURLS API. Please try again."
-msgstr ""
-
-#: yourls-link-creator.php:340 yourls-link-creator.php:454
-msgid "Unknown error"
-msgstr ""
-
-#: yourls-link-creator.php:348
-msgid "You have created a new YOURLS link"
-msgstr ""
-
-#: yourls-link-creator.php:350 yourls-link-creator.php:772
-msgid "Delete Link"
-msgstr ""
-
-#: yourls-link-creator.php:350
-msgid "Your YOURLS link has generated 0 clicks."
-msgstr ""
-
-#: yourls-link-creator.php:383
-msgid "The shortlink has been removed from WordPress"
-msgstr ""
-
-#: yourls-link-creator.php:384 yourls-link-creator.php:784
-msgid "optional keyword"
-msgstr ""
-
-#: yourls-link-creator.php:393
-msgid "There is no shortlink to delete"
-msgstr ""
-
-#: yourls-link-creator.php:504
-msgid "No posts to check."
-msgstr ""
-
-#: yourls-link-creator.php:531
-msgid "Could not connect to the YOURLS server."
-msgstr ""
-
-#: yourls-link-creator.php:654
-msgid "You have not entered any API information."
-msgstr ""
-
-#: yourls-link-creator.php:674
-msgid "There are no keys to convert."
-msgstr ""
-
-#: yourls-link-creator.php:713
-msgid "YOURLS Settings"
-msgstr ""
-
-#: yourls-link-creator.php:740
+#: lib/admin.php:105
 msgid "YOURLS Shortlink"
-msgstr ""
+msgstr "YOURLS Shortlink"
 
-#: yourls-link-creator.php:942
+#: lib/admin.php:274
+msgid "YOURLS Clicks"
+msgstr "YOURLS Clicks"
+
+#: lib/ajax.php:65 lib/ajax.php:178 lib/ajax.php:265 lib/ajax.php:334
+#: lib/ajax.php:422 lib/ajax.php:488
+msgid "The nonce did not validate."
+msgstr "The nonce did not validate."
+
+#: lib/ajax.php:74 lib/ajax.php:187 lib/ajax.php:241 lib/ajax.php:310
+#: lib/ajax.php:431
+msgid "No API data has been entered."
+msgstr "No API data has been entered."
+
+#: lib/ajax.php:83 lib/ajax.php:196 lib/ajax.php:250 lib/ajax.php:319
+msgid "No post ID was present."
+msgstr "No post ID was present."
+
+#: lib/ajax.php:95 lib/ajax.php:343
+msgid "A URL already exists."
+msgstr "A URL already exists."
+
+#: lib/ajax.php:117 lib/ajax.php:362
+msgid "There was an unknown API error."
+msgstr "There was an unknown API error."
+
+#: lib/ajax.php:143 lib/ajax.php:388
+msgid "You have created a new YOURLS link."
+msgstr "You have created a new YOURLS link."
+
+#: lib/ajax.php:153 lib/ajax.php:397
+msgid "There was an unknown error."
+msgstr "There was an unknown error."
+
+#: lib/ajax.php:208
+msgid "There is no URL to delete."
+msgstr "There is no URL to delete."
+
+#: lib/ajax.php:218
+msgid "You have removed your YOURLS link."
+msgstr "You have removed your YOURLS link."
+
+#: lib/ajax.php:287
+msgid "Your YOURLS click count has been updated"
+msgstr "Your YOURLS click count has been updated"
+
+#: lib/ajax.php:440
+msgid "There are no items with stored URLs."
+msgstr "There are no items with stored URLs."
+
+#: lib/ajax.php:466
+msgid "The click counts have been updated"
+msgstr "The click counts have been updated"
+
+#: lib/ajax.php:500
+msgid "There are no meta keys to convert."
+msgstr "There are no meta keys to convert."
+
+#: lib/ajax.php:527
+msgid "There are no keys matching this criteria. Please try again."
+msgstr "There are no keys matching this criteria. Please try again."
+
+#: lib/front.php:91
+msgid "Shortlink:"
+msgstr "Shortlink:"
+
+#: lib/front.php:92
+msgid "click to highlight"
+msgstr "click to highlight"
+
+#: lib/helper.php:182
+msgid "No API action was provided."
+msgstr "No API action was provided."
+
+#: lib/helper.php:191
+msgid "The API action was invalid."
+msgstr "The API action was invalid."
+
+#: lib/helper.php:200
+msgid "No data was returned from the API call."
+msgstr "No data was returned from the API call."
+
+#: lib/helper.php:209
+msgid "The user requesting the URL does not have authorization."
+msgstr "The user requesting the URL does not have authorization."
+
+#: lib/helper.php:243
+msgid "The response from the API was empty."
+msgstr "The response from the API was empty."
+
+#: lib/helper.php:264
+#, php-format
+msgid "The API call returned a %s response code."
+msgstr "The API call returned a %s response code."
+
+#: lib/helper.php:276
+msgid "No data was present in the body from the API call."
+msgstr "No data was present in the body from the API call."
+
+#: lib/helper.php:297
+msgid "The JSON could not be parsed."
+msgstr "The JSON could not be parsed."
+
+#: lib/helper.php:333
+msgid "No API data was returned."
+msgstr "No API data was returned."
+
+#: lib/helper.php:369
+msgid "optional keyword"
+msgstr "optional keyword"
+
+#: lib/helper.php:375
+msgid "Create YOURLS link"
+msgstr "Create YOURLS link"
+
+#: lib/helper.php:407
+msgid "Delete Link"
+msgstr "Delete Link"
+
+#: lib/helper.php:430
+msgid "Create YOURLS"
+msgstr "Create YOURLS"
+
+#: lib/helper.php:445
+msgid "Update YOURLS"
+msgstr "Update YOURLS"
+
+#: lib/settings.php:65
+msgid "Settings"
+msgstr "Settings"
+
+#: lib/settings.php:80
+msgid "YOURLS Settings"
+msgstr "YOURLS Settings"
+
+#: lib/settings.php:212
+msgid "Your settings have been saved."
+msgstr "Your settings have been saved."
+
+#: lib/settings.php:220
+msgid "Your settings have been deleted."
+msgstr "Your settings have been deleted."
+
+#: lib/settings.php:257
 msgid "YOURLS Link Creator Settings"
-msgstr ""
+msgstr "YOURLS Link Creator Settings"
 
-#: yourls-link-creator.php:951
+#: lib/settings.php:266
 msgid "Below are the basic settings for the YOURLS creator"
-msgstr ""
+msgstr "Below are the basic settings for the YOURLS creator"
 
-#: yourls-link-creator.php:972
+#: lib/settings.php:291
 msgid "YOURLS Custom URL"
-msgstr ""
+msgstr "YOURLS Custom URL"
 
-#: yourls-link-creator.php:975
+#: lib/settings.php:294
 msgid "Enter your custom YOURLS URL"
-msgstr ""
+msgstr "Enter your custom YOURLS URL"
 
-#: yourls-link-creator.php:980
+#: lib/settings.php:299
 msgid "YOURLS API Signature Key"
-msgstr ""
+msgstr "YOURLS API Signature Key"
 
-#: yourls-link-creator.php:983
+#: lib/settings.php:302
 msgid "Found in the tools section on your YOURLS admin page."
-msgstr ""
+msgstr "Found in the tools section on your YOURLS admin page."
 
-#: yourls-link-creator.php:988
+#: lib/settings.php:307
 msgid "Auto generate links"
-msgstr ""
+msgstr "Auto generate links"
 
-#: yourls-link-creator.php:991
+#: lib/settings.php:310
 msgid "Create a YOURLS link whenever a post is saved."
-msgstr ""
+msgstr "Create a YOURLS link whenever a post is saved."
 
-#: yourls-link-creator.php:996
-msgid "Use YOURLS for Shortlink"
-msgstr ""
+#: lib/settings.php:315
+msgid "Use YOURLS for shortlink"
+msgstr "Use YOURLS for shortlink"
 
-#: yourls-link-creator.php:999
+#: lib/settings.php:318
 msgid "Use the YOURLS link wherever wp_shortlink is fired"
-msgstr ""
+msgstr "Use the YOURLS link wherever wp_shortlink is fired"
 
-#: yourls-link-creator.php:1004
-msgid "Display on Custom Post Types"
-msgstr ""
+#: lib/settings.php:323
+msgid "Include Custom Post Types"
+msgstr "Include Custom Post Types"
 
-#: yourls-link-creator.php:1007
+#: lib/settings.php:326
 msgid "Display the YOURLS creator on public custom post types"
-msgstr ""
+msgstr "Display the YOURLS creator on public custom post types"
 
-#: yourls-link-creator.php:1012
-msgid "Select the post types to include"
-msgstr ""
+#: lib/settings.php:331
+msgid "Select the types to include"
+msgstr "Select the types to include"
 
-#: yourls-link-creator.php:1019
+#: lib/settings.php:336
+msgid "Use POST requests"
+msgstr "Use POST requests"
+
+#: lib/settings.php:339
+msgid "Check this box if you are getting API permission errors."
+msgstr "Check this box if you are getting API permission errors."
+
+#: lib/settings.php:346
 msgid "Save Changes"
-msgstr ""
+msgstr "Save Changes"
 
-#: yourls-link-creator.php:1044
+#: lib/settings.php:435
 msgid "About the Plugin"
-msgstr ""
+msgstr "About the Plugin"
 
-#: yourls-link-creator.php:1046
-msgid "plugin support form"
-msgstr ""
+#: lib/settings.php:438
+msgid "Questions?"
+msgstr "Questions?"
 
-#: yourls-link-creator.php:1046
-msgid "for bugs or feature requests."
-msgstr ""
-
-#: yourls-link-creator.php:1047
-msgid "<strong>Enjoy the plugin?</strong>"
-msgstr ""
-
-#: yourls-link-creator.php:1048
-msgid "Tweet about it"
-msgstr ""
-
-#: yourls-link-creator.php:1048
-msgid "and consider donating."
-msgstr ""
-
-#: yourls-link-creator.php:1049
+#: lib/settings.php:440
+#, php-format
 msgid ""
-"<strong>Donate:</strong> A lot of hard work goes into building plugins - "
-"support your open source developers. Include your twitter username and I'll "
-"send you a shout out for your generosity. Thank you!"
+"Talk to <a href=\"%s\" class=\"external\">@norcross</a> on twitter or visit "
+"the <a href=\"%s\" class=\"external\">plugin support forum</a> for bugs or "
+"feature requests."
 msgstr ""
+"Talk to <a href=\"%s\" class=\"external\">@norcross</a> on twitter or visit "
+"the <a href=\"%s\" class=\"external\">plugin support forum</a> for bugs or "
+"feature requests."
 
-#: yourls-link-creator.php:1062
-msgid "Data Options:"
+#: lib/settings.php:442
+msgid "Enjoy the plugin?"
+msgstr "Enjoy the plugin?"
+
+#: lib/settings.php:444
+#, php-format
+msgid ""
+"<a href=\"%s\" class=\"admin-twitter-link\">Tweet about it</a> and consider "
+"donating."
 msgstr ""
+"<a href=\"%s\" class=\"admin-twitter-link\">Tweet about it</a> and consider "
+"donating."
 
-#: yourls-link-creator.php:1064
+#: lib/settings.php:446
+msgid "Donate:"
+msgstr "Donate:"
+
+#: lib/settings.php:448
+msgid ""
+"A lot of hard work goes into building plugins - support your open source "
+"developers. Include your twitter username and I'll send you a shout out for "
+"your generosity. Thank you!"
+msgstr ""
+"A lot of hard work goes into building plugins - support your open source "
+"developers. Include your twitter username and I'll send you a shout out for "
+"your generosity. Thank you!"
+
+#: lib/settings.php:462
+msgid "Data Options"
+msgstr "Data Options"
+
+#: lib/settings.php:465
 msgid ""
 "Click the button below to refresh the click count data for all posts with a "
 "YOURLS link."
 msgstr ""
+"Click the button below to refresh the click count data for all posts with a "
+"YOURLS link."
 
-#: yourls-link-creator.php:1066
+#: lib/settings.php:466
 msgid "Refresh Click Counts"
-msgstr ""
+msgstr "Refresh Click Counts"
 
-#: yourls-link-creator.php:1070
+#: lib/settings.php:472
 msgid "Using Ozh's plugin? Click here to convert the existing meta keys"
-msgstr ""
+msgstr "Using Ozh's plugin? Click here to convert the existing meta keys"
 
-#: yourls-link-creator.php:1071
+#: lib/settings.php:473
 msgid "Convert Meta Keys"
-msgstr ""
+msgstr "Convert Meta Keys"
 
-#: yourls-link-creator.php:1086
-msgid "Links:"
-msgstr ""
+#: lib/settings.php:489
+msgid "Additional Links"
+msgstr "Additional Links"
 
-#: yourls-link-creator.php:1089
+#: lib/settings.php:492
 msgid "YOURLS homepage"
-msgstr ""
+msgstr "YOURLS homepage"
 
-#: yourls-link-creator.php:1090
+#: lib/settings.php:493
 msgid "Plugin on WP.org"
-msgstr ""
+msgstr "Plugin on WP.org"
 
-#: yourls-link-creator.php:1091
+#: lib/settings.php:494
 msgid "Plugin on GitHub"
-msgstr ""
+msgstr "Plugin on GitHub"
 
-#: yourls-link-creator.php:1092
+#: lib/settings.php:495
 msgid "Support Forum"
-msgstr ""
+msgstr "Support Forum"
+
+#: lib/settings.php:510
+msgid "PayPal - The safer, easier way to pay online!"
+msgstr "PayPal - The safer, easier way to pay online!"

@@ -2,7 +2,7 @@
 /**
  * YOURLS Link Creator - Front End Module
  *
- * Contains front end display functions
+ * Contains front end functions
  *
  * @package YOURLS Link Creator
  */
@@ -74,6 +74,7 @@ class YOURLSCreator_Front
 	 */
 	public function yourls_display( $echo = true ) {
 
+		// fetch the global post object
 		global $post;
 
 		// check existing postmeta for YOURLS
@@ -92,16 +93,13 @@ class YOURLSCreator_Front
 			$show  .= '<input id="yourls-link" size="28" title="' . __( 'click to highlight', 'wpyourls' ) . '" type="text" name="yourls-link" value="'. esc_url( $link ) .'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
 		$show  .= '</p>';
 
-		// filter it
-		$box    = apply_filters( 'yourls_template_tag', $show, $post->ID );
-
 		// echo the box if requested
-		if ( ! empty( $echo ) ) {
-			echo $box;
+		if ( $echo === true ) {
+			echo apply_filters( 'yourls_template_tag', $show, $post->ID );
 		}
 
 		// return the box
-		return $box;
+		return apply_filters( 'yourls_template_tag', $show, $post->ID );
 	}
 
 // end class

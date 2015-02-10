@@ -137,11 +137,6 @@ class YOURLSCreator_Settings
 			$store['cpt']   = true;
 		}
 
-		// check the boolean for using POST method
-		if ( ! empty( $data['cal'] ) ) {
-			$store['cal']   = true;
-		}
-
 		// check the each possible CPT
 		if ( ! empty( $data['cpt'] ) && ! empty( $data['typ'] ) ) {
 			$store['typ']   = YOURLSCreator_Helper::sanitize_array_text( $data['typ'] );
@@ -279,7 +274,6 @@ class YOURLSCreator_Settings
 				$short  = ! empty( $data['sht'] ) ? true : false;
 				$cpts   = ! empty( $data['cpt'] ) ? true : false;
 				$types  = ! empty( $data['typ'] ) ? (array) $data['typ'] : array();
-				$call   = ! empty( $data['cal'] ) ? true : false;
 
 				// load the settings fields
 				wp_nonce_field( 'yourls_settings_save_nonce', 'yourls_settings_save', false, true );
@@ -297,8 +291,9 @@ class YOURLSCreator_Settings
 
 					<tr>
 						<th><?php _e( 'YOURLS API Signature Key', 'wpyourls' ); ?></th>
-						<td>
-							<input type="password" class="regular-text code" value="<?php echo esc_attr( $api ); ?>" id="yourls-api" name="yourls-options[api]" autocomplete="off">
+						<td class="apikey-field-wrapper">
+							<input type="text" class="regular-text code" value="<?php echo esc_attr( $api ); ?>" id="yourls-api" name="yourls-options[api]" autocomplete="off">
+							<span class="dashicons dashicons-visibility password-toggle"></span>
 							<p class="description"><?php _e('Found in the tools section on your YOURLS admin page.', 'wpyourls') ?></p>
 						</td>
 					</tr>
@@ -330,14 +325,6 @@ class YOURLSCreator_Settings
 					<tr class="secondary yourls-types" style="display:none;">
 						<th><?php _e( 'Select the types to include', 'wpyourls' ); ?></th>
 						<td><?php echo self::post_types( $types ); ?></td>
-					</tr>
-
-					<tr>
-						<th><?php _e( 'Use POST requests', 'wpyourls' ) ?></th>
-						<td class="setting-item">
-							<input type="checkbox" name="yourls-options[cal]" id="yourls-cal" value="true" <?php checked( $call, true ); ?> />
-							<label for="yourls-call"><?php _e( 'Check this box if you are getting API permission errors.', 'wpyourls' ); ?></label>
-						</td>
 					</tr>
 
 				</tbody>
@@ -466,6 +453,13 @@ class YOURLSCreator_Settings
 					<input type="button" class="yourls-click-updates button-primary" value="<?php _e( 'Refresh Click Counts', 'wpyourls' ); ?>" >
 					<span class="spinner yourls-spinner yourls-refresh-spinner"></span>
 					<?php wp_nonce_field( 'yourls_refresh_nonce', 'yourls_refresh', false, true ); ?>
+
+					<hr />
+
+					<p><?php _e( 'Click the button below to attempt an import of existing YOURLS links.', 'wpyourls' ); ?></p>
+					<input type="button" class="yourls-click-import button-primary" value="<?php _e( 'Import Existing URLs', 'wpyourls' ); ?>" >
+					<span class="spinner yourls-spinner yourls-import-spinner"></span>
+					<?php wp_nonce_field( 'yourls_import_nonce', 'yourls_import', false, true ); ?>
 
 					<hr />
 

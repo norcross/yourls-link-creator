@@ -7,6 +7,26 @@ div.yourls-form-text {
 	margin:0 0 20px 0;
 }
 
+td.apikey-field-wrapper span.password-toggle {
+	font-size: 24px;
+	height: 24px;
+	width: 24px;
+	cursor: pointer;
+	position: relative;
+	top: 2px;
+}
+
+td.apikey-field-wrapper span.password-toggle.password-visible {
+	color: #0088cc;
+}
+
+input#yourls-api::-ms-reveal,
+input#yourls-api::-ms-clear {
+	display: none !important;
+}
+
+
+/* settings sidebar */
 div.yourls-sidebox {}
 
 div.yourls-sidebox hr {

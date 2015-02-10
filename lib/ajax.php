@@ -40,6 +40,7 @@ class YOURLSCreator_Ajax
 		add_action( 'wp_ajax_inline_yourls',        array( $this, 'inline_yourls'       )           );
 		add_action( 'wp_ajax_refresh_yourls',       array( $this, 'refresh_yourls'      )           );
 		add_action( 'wp_ajax_convert_yourls',       array( $this, 'convert_yourls'      )           );
+		add_action( 'wp_ajax_import_yourls',        array( $this, 'import_yourls'       )           );
 	}
 
 	/**
@@ -88,6 +89,15 @@ class YOURLSCreator_Ajax
 		// now cast the post ID
 		$post_id    = absint( $_POST['post_id'] );
 
+		// bail if we aren't working with a published post
+		if ( 'publish' !== get_post_status( $post_id ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'INVALID_STATUS';
+			$ret['message'] = __( 'This is not a valid post status.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
 		// do a quick check for a URL
 		if ( false !== $link = YOURLSCreator_Helper::get_yourls_meta( $post_id, '_yourls_url' ) ) {
 			$ret['success'] = false;
@@ -97,15 +107,21 @@ class YOURLSCreator_Ajax
 			die();
 		}
 
-		// check for keyword
-		$keyword    = ! empty( $_POST['keyword'] ) ? esc_sql( $_POST['keyword'] ) : '';
+		// do a quick check for a permalink
+		if ( false === $url = YOURLSCreator_Helper::prepare_api_link( $post_id ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_PERMALINK';
+			$ret['message'] = __( 'No permalink could be retrieved.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
 
-		// get my post URL and title
-		$url    = get_permalink( $post_id );
-		$title  = get_the_title( $post_id );
+		// check for keyword and get the title
+		$keyword = ! empty( $_POST['keyword'] ) ? YOURLSCreator_Helper::prepare_api_keyword( $_POST['keyword'] ) : '';
+		$title   = get_the_title( $post_id );
 
 		// set my args for the API call
-		$args   = array( 'url' => esc_url( $url ), 'title' => esc_attr( $title ), 'keyword' => $keyword );
+		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ), 'keyword' => $keyword );
 
 		// make the API call
 		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', $args );
@@ -324,6 +340,15 @@ class YOURLSCreator_Ajax
 		// now cast the post ID
 		$post_id    = absint( $_POST['post_id'] );
 
+		// bail if we aren't working with a published post
+		if ( 'publish' !== get_post_status( $post_id ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'INVALID_STATUS';
+			$ret['message'] = __( 'This is not a valid post status.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
 		// verify our nonce
 		$check	= check_ajax_referer( 'yourls_inline_create_' . absint( $post_id ), 'nonce', false );
 
@@ -345,12 +370,20 @@ class YOURLSCreator_Ajax
 			die();
 		}
 
+		// do a quick check for a permalink
+		if ( false === $url = YOURLSCreator_Helper::prepare_api_link( $post_id ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_PERMALINK';
+			$ret['message'] = __( 'No permalink could be retrieved.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
 		// get my post URL and title
-		$url    = get_permalink( $post_id );
 		$title  = get_the_title( $post_id );
 
 		// set my args for the API call
-		$args   = array( 'url' => esc_url( $url ), 'title' => esc_attr( $title ) );
+		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ) );
 
 		// make the API call
 		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', $args );
@@ -538,6 +571,124 @@ class YOURLSCreator_Ajax
 			echo json_encode( $ret );
 			die();
 		}
+	}
+
+	/**
+	 * check the YOURLS install for existing links
+	 * and pull the data if it exists
+	 */
+	public function import_yourls() {
+
+		// only run on admin
+		if ( ! is_admin() ) {
+			die();
+		}
+
+		// verify our nonce
+		$check	= check_ajax_referer( 'yourls_import_nonce', 'nonce', false );
+
+		// check to see if our nonce failed
+		if( ! $check ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NONCE_FAILED';
+			$ret['message'] = __( 'The nonce did not validate.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail if the API key or URL have not been entered
+		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_API_DATA';
+			$ret['message'] = __( 'No API data has been entered.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// set my args for the API call
+		$args   = array( 'filter' => 'top', 'limit' => apply_filters( 'yourls_import_limit', 999 ) );
+
+		// make the API call
+		$fetch  = YOURLSCreator_Helper::run_yourls_api_call( 'stats', $args );
+
+		// bail if empty data
+		if ( empty( $fetch ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'EMPTY_API';
+			$ret['message'] = __( 'There was an unknown API error.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail error received
+		if ( false === $fetch['success'] ) {
+			$ret['success'] = false;
+			$ret['errcode'] = $build['errcode'];
+			$ret['message'] = $build['message'];
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail error received
+		if ( empty( $fetch['data']['links'] ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_LINKS';
+			$ret['message'] = __( 'There was no available link data to import.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// filter the incoming for matching links
+		$filter = YOURLSCreator_Helper::filter_yourls_import( $fetch['data']['links'] );
+
+		// bail error received
+		if ( empty( $filter ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_MATCHING_LINKS';
+			$ret['message'] = __( 'There were no matching links to import.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// set a false flag
+		$error  = false;
+
+		// now filter them
+		foreach ( $filter as $item ) {
+
+			// do the import
+			$import = YOURLSCreator_Helper::maybe_import_link( $item );
+
+			// bail error received
+			if ( empty( $import ) ) {
+				$error  = true;
+				break;
+			}
+		}
+
+		// bail if we had true on the import
+		if ( true === $error ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_IMPORT_ACTION';
+			$ret['message'] = __( 'The data could not be imported.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// hooray. it worked. do the ajax return
+		if ( false === $error ) {
+			$ret['success'] = true;
+			$ret['message'] = __( 'All available YOURLS data has been imported.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// we've reached the end, and nothing worked....
+		$ret['success'] = false;
+		$ret['errcode'] = 'UNKNOWN';
+		$ret['message'] = __( 'There was an unknown error.', 'wpyourls' );
+		echo json_encode( $ret );
+		die();
 	}
 
 // end class

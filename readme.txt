@@ -5,7 +5,7 @@ Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.6
 Tested up to: 4.1
-Stable tag: 2.0.2
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,15 +64,28 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 == Changelog ==
 
-= 2.0.2 =
+= 2.0.4 - 02/09/2015 =
+* fixed API query args getting malformed before call
+* fixed content title sanitation encoding
+* forced POST method for API call and removed setting
+* added bulk import function for existing data
+* added `yourls_display_box` template tag to display front end box
+* added `get_yourls_shortlink` to return or echo the shortlink
+* added `wp_ozh_yourls_raw_url` to match previous plugin from Ozh
+
+= 2.0.3 - 02/05/2015 =
+* added API key field show / hide to (hopefully) account for Chrome being aggressive on the field
+* removed 'future' from array of post types to create items on save
+
+= 2.0.2 - 02/02/2015 =
 * fixed bug with creating link on post save
 
-= 2.0.1 =
+= 2.0.1 - 02/01/2015 =
 * added post title submission to API call
 * added option for using POST method instead of GET method to address API permission issues
 * nonce ALL THE THINGS
 
-= 2.0.0 =
+= 2.0.0 - 02/01/2015 =
 * COMPLETELY REFACTORED
 * updated UI to match current WP setup
 * rewrote javascript for better security
@@ -80,32 +93,32 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 * added check for possible 404 return on YOURLS server
 * a whole lot more
 
-= 1.09 =
+= 1.09 - 02/21/2013 =
 * bugfixes related to certain hosting configurations
 * minor JS cleanup
 
-= 1.08 =
+= 1.08 - 12/31/2012 =
 * change to allow scheduled posts to process URL call. props @ethitter
 
-= 1.07 =
+= 1.07 - 12/24/2012 =
 * better sanitizing of personal YOURLS URL
 * code cleanup
 
-= 1.06 =
+= 1.06 - 12/18/2012 =
 * included template tag for theme use. (See FAQs for usage)
 * added a 'delete' button for single links (See FAQs for details)
 * The YOURLS metabox will not appear until a post has been published.
 
-= 1.05 =
+= 1.05 - 12/10/2012 =
 * added a conversion tool from Ozh's plugin to this one
 
-= 1.04 =
+= 1.04 - 12/09/2012 =
 * refactoring the wp_shortlink functionality
 
-= 1.03 =
+= 1.03 - 12/04/2012 =
 * Bugfix for post type checking
 
-= 1.02 =
+= 1.02 - 10/14/2012 =
 * Option for adding to specific post types
 * delay link creation until status is published
 * internationalization support

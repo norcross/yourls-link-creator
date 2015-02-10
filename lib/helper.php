@@ -216,24 +216,15 @@ class YOURLSCreator_Helper
 		// now add our optional args
 		$args   = ! empty( $args ) ? array_merge( $args, $base ) : $base;
 
-		// if the user selected POST method, use that. otherwise use GET
-		if ( false !== YOURLSCreator_Helper::get_yourls_option( 'cal' ) ) {
-
-			// construct the args for a remote POST
-			$build  = wp_remote_post( self::get_yourls_api_url(), array(
-				'method'    => 'POST',
-				'timeout'   => 45,
-				'sslverify' => false,
-				'body'      => $args,
-			    )
-			);
-		} else {
-			// build the request URL
-			$call   = add_query_arg( $args, self::get_yourls_api_url() );
-
-			// and make the request
-			$build  = wp_remote_get( esc_url( $call ), array( 'timeout' => 30, 'sslverify' => false ) );
-		}
+		// construct the args for a remote POST
+		$build  = wp_remote_post( self::get_yourls_api_url(), array(
+			'method'       => 'POST',
+			'timeout'      => 45,
+			'sslverify'    => false,
+			'httpversion'  => '1.1',
+			'body'         => $args,
+			)
+		);
 
 		// bail on empty return
 		if ( empty( $build ) ) {
@@ -343,6 +334,110 @@ class YOURLSCreator_Helper
 			'errcode'   => null,
 			'clicknm'   => $count
 		);
+	}
+
+	/**
+	 * take the full API return and filter out the relevant data
+	 *
+	 * @param  array  $group [description]
+	 * @return [type]       [description]
+	 */
+	public static function filter_yourls_import( $group = array() ) {
+
+		// set an empty
+		$data   = array();
+
+		// loop them
+		foreach ( $group as $item ) {
+
+			// make sure the items we need exist
+			if ( empty( $item['url'] ) || empty( $item['shorturl'] ) ) {
+				continue;
+			}
+
+			// run the link comparison
+			if ( false === self::compare_import_link( esc_url( $item['url'] ) ) ) {
+				continue;
+			}
+
+			// make a slug
+			$slug   = self::create_import_slug( $item['url'] );
+
+			// fetch the click count
+			$clicks = ! empty( $item['clicks'] ) ? absint( $item['clicks'] ) : '0';
+
+			// and make a single item
+			$data[] = array( 'slug' => $slug, 'link' => esc_url( $item['url'] ), 'short' => esc_url( $item['shorturl'] ), 'clicks' => $clicks );
+		}
+
+		// return the data
+		return ! empty( $data ) ? $data : false;
+	}
+
+	/**
+	 * compare a URL being imported to the site URL
+	 *
+	 * @param  string $link [description]
+	 * @return [type]       [description]
+	 */
+	public static function compare_import_link( $link = '' ) {
+
+		// get my home host link
+		$home   = parse_url( home_url( '/' ), PHP_URL_HOST );
+
+		// parse my incoming
+		$import = parse_url( esc_url( $link ), PHP_URL_HOST );
+
+		// return true / false based on comparison
+		return self::strip_trailing_slash( $home ) == self::strip_trailing_slash( $import ) ? true : false;
+	}
+
+	/**
+	 * make me a fancy slug
+	 *
+	 * @param  string $link [description]
+	 * @return [type]       [description]
+	 */
+	public static function create_import_slug( $link = '' ) {
+
+		// parse it
+		$slug   = parse_url( esc_url( $link ), PHP_URL_PATH );
+
+		// return it
+		return str_replace( '/', '', $slug );
+	}
+
+	/**
+	 * look in the database for a matching slug
+	 * and update accordingly
+	 *
+	 * @param  array  $data [description]
+	 * @return [type]       [description]
+	 */
+	public static function maybe_import_link( $data = array() ) {
+
+		// call the global database
+		global $wpdb;
+
+		// set up our query
+		$query  = $wpdb->prepare("
+			SELECT	ID
+			FROM	$wpdb->posts
+			WHERE	post_name = '%s'
+			AND     post_status = '%s'
+		", esc_sql( $data['slug'] ), esc_sql( 'publish' ) );
+
+		// fetch the column
+		$post   = $wpdb->get_col( $query );
+
+		// if we have it, use it
+		if ( ! empty( $post ) && ! empty( $post[0] ) ) {
+			update_post_meta( absint( $post[0] ), '_yourls_url', esc_url( $data['short'] ) );
+			update_post_meta( absint( $post[0] ), '_yourls_clicks', absint( $data['clicks'] ) );
+		}
+
+		// and return
+		return true;
 	}
 
 	/**
@@ -467,6 +562,54 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * take a provided keyword (if it exists) and make sure it's
+	 * sanitized properly
+	 *
+	 * @param  integer $post_id [description]
+	 * @return [type]           [description]
+	 */
+	public static function prepare_api_keyword( $string = '' ) {
+		return preg_replace( '/[^A-Za-z0-9]/', '', $string );
+	}
+
+	/**
+	 * fetch the permalink from a post ID and return it
+	 * with the trailing slash removed
+	 *
+	 * @param  integer $post_id [description]
+	 * @param  boolean $strip   [description]
+	 * @return [type]           [description]
+	 */
+	public static function prepare_api_link( $post_id = 0, $strip = true ) {
+
+		// bail without a link
+		if ( empty( $post_id ) ) {
+			return false;
+		}
+
+		// fetch the URL
+		$link   = get_permalink( $post_id );
+
+		// bail without a URL
+		if ( empty( $link ) ) {
+			return false;
+		}
+
+		// return the URL stripped (or not)
+		return false !== $strip ? self::strip_trailing_slash( $link ) : $link;
+	}
+
+	/**
+	 * remove the trailing slash from a URL
+	 *
+	 * @param  string $link  [description]
+	 * @return [type]        [description]
+	 */
+	public static function strip_trailing_slash( $link = '' ) {
+		return substr( $link, -1 ) == '/' ? substr( $link, 0, -1 ) : $link;
+	}
+
+	/**
 	 * check permissions on saving meta data
 	 *
 	 * @param  integer $post_id [description]
@@ -492,7 +635,7 @@ class YOURLSCreator_Helper
 
 		// Bail out if user does not have permissions
 		if ( ! empty( $post_id ) && ! current_user_can( $cap, $post_id ) ) {
-			return $post_id;
+			return true;
 		}
 
 		// return false

@@ -36,6 +36,12 @@ class YOURLSCreator_Global
 	public function __construct() {
 		add_filter( 'pre_get_shortlink',            array( $this, 'shortlink_button'    ),  2,  2   );
 		add_filter( 'get_shortlink',                array( $this, 'yourls_shortlink'    ),  10, 3   );
+		add_action( 'transition_post_status',       array( $this, 'yourls_on_publish'   ),  10, 3   );
+		add_action( 'publish_future_post',          array( $this, 'yourls_on_schedule'  ),  10      );
+
+		// our two cron jobs
+		add_action( 'yourls_cron',                  array( $this, 'yourls_click_cron'   )           );
+		add_action( 'yourls_test',                  array( $this, 'yourls_test_cron'    )           );
 	}
 
 	/**
@@ -95,6 +101,93 @@ class YOURLSCreator_Global
 
 		// return the custom YOURLS link or the regular one
 		return ! empty( $custom ) ? $custom : $shortlink;
+	}
+
+	/**
+	 * generate a YOURLS link when a post is
+	 * manually moved from future to publish
+	 *
+	 * @param  [type] $new_status [description]
+	 * @param  [type] $old_status [description]
+	 * @param  [type] $post       [description]
+	 * @return [type]             [description]
+	 */
+	public function yourls_on_publish( $new_status, $old_status, $post ) {
+
+		// we only want to handle items going from 'future' to 'publish'
+		if ( 'future' == $old_status && 'publish' == $new_status ) {
+        	YOURLSCreator_Helper::get_single_shorturl( $post->ID, 'sch' );
+		}
+	}
+
+	/**
+	 * generate a YOURLS link when a post is
+	 * automatically moved from future to publish
+	 *
+	 * @param  [type] $post [description]
+	 * @return [type]       [description]
+	 */
+	public function yourls_on_schedule( $post_id ) {
+		YOURLSCreator_Helper::get_single_shorturl( $post_id, 'sch' );
+	}
+
+	/**
+	 * run update job to get click counts via cron
+	 *
+	 * @return void
+	 */
+	public function yourls_click_cron() {
+
+		// bail if the API key or URL have not been entered
+		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
+			return;
+		}
+
+		// fetch the IDs that contain a YOURLS url meta key
+		$items  = YOURLSCreator_Helper::get_yourls_post_ids();
+
+		// bail if none are present
+		if ( empty( $items ) ) {
+			return false;
+		}
+
+		// loop the IDs
+		foreach ( $items as $item_id ) {
+
+			// get my click number
+			$clicks = YOURLSCreator_Helper::get_single_click_count( $item_id );
+
+			// and update my meta
+			if ( ! empty( $clicks['clicknm'] ) ) {
+				update_post_meta( $item_id, '_yourls_clicks', $clicks['clicknm'] );
+			}
+		}
+	}
+
+	/**
+	 * run a daily test to make sure the API is available
+	 *
+	 * @return void
+	 */
+	public function yourls_test_cron() {
+
+		// bail if the API key or URL have not been entered
+		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
+			return;
+		}
+
+		// make the API call
+		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'db-stats' );
+
+		// handle the check and set it
+		$check  = ! empty( $build ) && false !== $build['success'] ? 'connect' : 'noconnect';
+
+		// set the option return
+		if ( false !== get_option( 'yourls_api_test' ) ) {
+			update_option( 'yourls_api_test', $check );
+		} else {
+			add_option( 'yourls_api_test', $check, null, 'no' );
+		}
 	}
 
 // end class

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wpyourls\n"
-"POT-Creation-Date: 2015-02-09 22:02-0500\n"
-"PO-Revision-Date: 2015-02-09 22:03-0500\n"
+"POT-Creation-Date: 2015-02-13 22:37-0500\n"
+"PO-Revision-Date: 2015-02-13 22:38-0500\n"
 "Last-Translator: Andrew Norcross <andrew.norcross@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -16,101 +16,105 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: lib\n"
 
-#: lib/admin.php:73
+#: lib/admin.php:72
 msgid "Get Shortlink"
 msgstr "Get Shortlink"
 
-#: lib/admin.php:74
+#: lib/admin.php:73
 msgid "There was an error with your request."
 msgstr "There was an error with your request."
 
-#: lib/admin.php:110
+#: lib/admin.php:109
 msgid "YOURLS Shortlink"
 msgstr "YOURLS Shortlink"
 
-#: lib/admin.php:286
+#: lib/admin.php:252
 msgid "YOURLS Clicks"
 msgstr "YOURLS Clicks"
 
-#: lib/ajax.php:66 lib/ajax.php:194 lib/ajax.php:281 lib/ajax.php:359
-#: lib/ajax.php:455 lib/ajax.php:521 lib/ajax.php:594
+#: lib/ajax.php:67 lib/ajax.php:195 lib/ajax.php:283 lib/ajax.php:361
+#: lib/ajax.php:457 lib/ajax.php:535 lib/ajax.php:601 lib/ajax.php:674
 msgid "The nonce did not validate."
 msgstr "The nonce did not validate."
 
-#: lib/ajax.php:75 lib/ajax.php:203 lib/ajax.php:257 lib/ajax.php:326
-#: lib/ajax.php:464 lib/ajax.php:603
+#: lib/ajax.php:76 lib/ajax.php:204 lib/ajax.php:259 lib/ajax.php:328
+#: lib/ajax.php:466 lib/ajax.php:544 lib/ajax.php:683
 msgid "No API data has been entered."
 msgstr "No API data has been entered."
 
-#: lib/ajax.php:84 lib/ajax.php:212 lib/ajax.php:266 lib/ajax.php:335
+#: lib/ajax.php:85 lib/ajax.php:213 lib/ajax.php:268 lib/ajax.php:337
 msgid "No post ID was present."
 msgstr "No post ID was present."
 
-#: lib/ajax.php:96 lib/ajax.php:347
+#: lib/ajax.php:97 lib/ajax.php:349
 msgid "This is not a valid post status."
 msgstr "This is not a valid post status."
 
-#: lib/ajax.php:105 lib/ajax.php:368
+#: lib/ajax.php:106 lib/ajax.php:370
 msgid "A URL already exists."
 msgstr "A URL already exists."
 
-#: lib/ajax.php:114 lib/ajax.php:377
+#: lib/ajax.php:115 lib/ajax.php:379
 msgid "No permalink could be retrieved."
 msgstr "No permalink could be retrieved."
 
-#: lib/ajax.php:133 lib/ajax.php:395 lib/ajax.php:618
+#: lib/ajax.php:134 lib/ajax.php:397 lib/ajax.php:698
 msgid "There was an unknown API error."
 msgstr "There was an unknown API error."
 
-#: lib/ajax.php:159 lib/ajax.php:421
+#: lib/ajax.php:160 lib/ajax.php:423
 msgid "You have created a new YOURLS link."
 msgstr "You have created a new YOURLS link."
 
-#: lib/ajax.php:169 lib/ajax.php:430 lib/ajax.php:689
+#: lib/ajax.php:170 lib/ajax.php:432 lib/ajax.php:510 lib/ajax.php:769
 msgid "There was an unknown error."
 msgstr "There was an unknown error."
 
-#: lib/ajax.php:224
+#: lib/ajax.php:225
 msgid "There is no URL to delete."
 msgstr "There is no URL to delete."
 
-#: lib/ajax.php:234
+#: lib/ajax.php:236
 msgid "You have removed your YOURLS link."
 msgstr "You have removed your YOURLS link."
 
-#: lib/ajax.php:303
+#: lib/ajax.php:305
 msgid "Your YOURLS click count has been updated"
 msgstr "Your YOURLS click count has been updated"
 
-#: lib/ajax.php:473
+#: lib/ajax.php:491 lib/helper.php:664
+msgid "The status of the YOURLS API could not be determined."
+msgstr "The status of the YOURLS API could not be determined."
+
+#: lib/ajax.php:553
 msgid "There are no items with stored URLs."
 msgstr "There are no items with stored URLs."
 
-#: lib/ajax.php:499
+#: lib/ajax.php:579
 msgid "The click counts have been updated"
 msgstr "The click counts have been updated"
 
-#: lib/ajax.php:533
+#: lib/ajax.php:613
 msgid "There are no meta keys to convert."
 msgstr "There are no meta keys to convert."
 
-#: lib/ajax.php:560
+#: lib/ajax.php:640
 msgid "There are no keys matching this criteria. Please try again."
 msgstr "There are no keys matching this criteria. Please try again."
 
-#: lib/ajax.php:636
+#: lib/ajax.php:716
 msgid "There was no available link data to import."
 msgstr "There was no available link data to import."
 
-#: lib/ajax.php:648
+#: lib/ajax.php:728
 msgid "There were no matching links to import."
 msgstr "There were no matching links to import."
 
-#: lib/ajax.php:673
+#: lib/ajax.php:753
 msgid "The data could not be imported."
 msgstr "The data could not be imported."
 
-#: lib/ajax.php:681
+#: lib/ajax.php:761
 msgid "All available YOURLS data has been imported."
 msgstr "All available YOURLS data has been imported."
 
@@ -122,62 +126,70 @@ msgstr "Shortlink:"
 msgid "click to highlight"
 msgstr "click to highlight"
 
-#: lib/helper.php:182
+#: lib/helper.php:210
 msgid "No API action was provided."
 msgstr "No API action was provided."
 
-#: lib/helper.php:191
+#: lib/helper.php:219
 msgid "The API action was invalid."
 msgstr "The API action was invalid."
 
-#: lib/helper.php:200
+#: lib/helper.php:228
 msgid "No data was returned from the API call."
 msgstr "No data was returned from the API call."
 
-#: lib/helper.php:209
+#: lib/helper.php:237
 msgid "The user requesting the URL does not have authorization."
 msgstr "The user requesting the URL does not have authorization."
 
-#: lib/helper.php:234
+#: lib/helper.php:266
 msgid "The response from the API was empty."
 msgstr "The response from the API was empty."
 
-#: lib/helper.php:255
+#: lib/helper.php:287
 #, php-format
 msgid "The API call returned a %s response code."
 msgstr "The API call returned a %s response code."
 
-#: lib/helper.php:267
+#: lib/helper.php:299
 msgid "No data was present in the body from the API call."
 msgstr "No data was present in the body from the API call."
 
-#: lib/helper.php:288
+#: lib/helper.php:320
 msgid "The JSON could not be parsed."
 msgstr "The JSON could not be parsed."
 
-#: lib/helper.php:324
+#: lib/helper.php:410
 msgid "No API data was returned."
 msgstr "No API data was returned."
 
-#: lib/helper.php:464
+#: lib/helper.php:550
 msgid "optional keyword"
 msgstr "optional keyword"
 
-#: lib/helper.php:470
+#: lib/helper.php:556
 msgid "Create YOURLS link"
 msgstr "Create YOURLS link"
 
-#: lib/helper.php:502
+#: lib/helper.php:588
 msgid "Delete Link"
 msgstr "Delete Link"
 
-#: lib/helper.php:525
+#: lib/helper.php:611
 msgid "Create YOURLS"
 msgstr "Create YOURLS"
 
-#: lib/helper.php:540
+#: lib/helper.php:626
 msgid "Update YOURLS"
 msgstr "Update YOURLS"
+
+#: lib/helper.php:673
+msgid "The YOURLS API is currently accessible."
+msgstr "The YOURLS API is currently accessible."
+
+#: lib/helper.php:683
+msgid "The YOURLS API is currently NOT accessible."
+msgstr "The YOURLS API is currently NOT accessible."
 
 #: lib/settings.php:65
 msgid "Settings"
@@ -187,79 +199,91 @@ msgstr "Settings"
 msgid "YOURLS Settings"
 msgstr "YOURLS Settings"
 
-#: lib/settings.php:207
+#: lib/settings.php:215
 msgid "Your settings have been saved."
 msgstr "Your settings have been saved."
 
-#: lib/settings.php:215
+#: lib/settings.php:223
 msgid "Your settings have been deleted."
 msgstr "Your settings have been deleted."
 
-#: lib/settings.php:252
+#: lib/settings.php:260
 msgid "YOURLS Link Creator Settings"
 msgstr "YOURLS Link Creator Settings"
 
-#: lib/settings.php:261
-msgid "Below are the basic settings for the YOURLS creator"
-msgstr "Below are the basic settings for the YOURLS creator"
+#: lib/settings.php:269
+msgid ""
+"Below are the basic settings for the YOURLS creator. A reminder, your YOURLS "
+"install cannot be public."
+msgstr ""
+"Below are the basic settings for the YOURLS creator. A reminder, your YOURLS "
+"install cannot be public."
 
-#: lib/settings.php:285
+#: lib/settings.php:294
 msgid "YOURLS Custom URL"
 msgstr "YOURLS Custom URL"
 
-#: lib/settings.php:288
+#: lib/settings.php:297
 msgid "Enter your custom YOURLS URL"
 msgstr "Enter your custom YOURLS URL"
 
-#: lib/settings.php:293
+#: lib/settings.php:302
 msgid "YOURLS API Signature Key"
 msgstr "YOURLS API Signature Key"
 
-#: lib/settings.php:297
+#: lib/settings.php:306
 msgid "Found in the tools section on your YOURLS admin page."
 msgstr "Found in the tools section on your YOURLS admin page."
 
-#: lib/settings.php:302
+#: lib/settings.php:311
 msgid "Auto generate links"
 msgstr "Auto generate links"
 
-#: lib/settings.php:305
-msgid "Create a YOURLS link whenever a post is saved."
-msgstr "Create a YOURLS link whenever a post is saved."
+#: lib/settings.php:314
+msgid "Create a YOURLS link when a post is saved."
+msgstr "Create a YOURLS link when a post is saved."
 
-#: lib/settings.php:310
+#: lib/settings.php:319
+msgid "Scheduled Content"
+msgstr "Scheduled Content"
+
+#: lib/settings.php:322
+msgid "Create a YOURLS link when a scheduled post publishes."
+msgstr "Create a YOURLS link when a scheduled post publishes. "
+
+#: lib/settings.php:327
 msgid "Use YOURLS for shortlink"
 msgstr "Use YOURLS for shortlink"
 
-#: lib/settings.php:313
+#: lib/settings.php:330
 msgid "Use the YOURLS link wherever wp_shortlink is fired"
 msgstr "Use the YOURLS link wherever wp_shortlink is fired"
 
-#: lib/settings.php:318
+#: lib/settings.php:335
 msgid "Include Custom Post Types"
 msgstr "Include Custom Post Types"
 
-#: lib/settings.php:321
+#: lib/settings.php:338
 msgid "Display the YOURLS creator on public custom post types"
 msgstr "Display the YOURLS creator on public custom post types"
 
-#: lib/settings.php:326
+#: lib/settings.php:343
 msgid "Select the types to include"
 msgstr "Select the types to include"
 
-#: lib/settings.php:333
+#: lib/settings.php:350
 msgid "Save Changes"
 msgstr "Save Changes"
 
-#: lib/settings.php:422
+#: lib/settings.php:443
 msgid "About the Plugin"
 msgstr "About the Plugin"
 
-#: lib/settings.php:425
+#: lib/settings.php:446
 msgid "Questions?"
 msgstr "Questions?"
 
-#: lib/settings.php:427
+#: lib/settings.php:448
 #, php-format
 msgid ""
 "Talk to <a href=\"%s\" class=\"external\">@norcross</a> on twitter or visit "
@@ -270,11 +294,11 @@ msgstr ""
 "the <a href=\"%s\" class=\"external\">plugin support forum</a> for bugs or "
 "feature requests."
 
-#: lib/settings.php:429
+#: lib/settings.php:450
 msgid "Enjoy the plugin?"
 msgstr "Enjoy the plugin?"
 
-#: lib/settings.php:431
+#: lib/settings.php:452
 #, php-format
 msgid ""
 "<a href=\"%s\" class=\"admin-twitter-link\">Tweet about it</a> and consider "
@@ -283,11 +307,11 @@ msgstr ""
 "<a href=\"%s\" class=\"admin-twitter-link\">Tweet about it</a> and consider "
 "donating."
 
-#: lib/settings.php:433
+#: lib/settings.php:454
 msgid "Donate:"
 msgstr "Donate:"
 
-#: lib/settings.php:435
+#: lib/settings.php:456
 msgid ""
 "A lot of hard work goes into building plugins - support your open source "
 "developers. Include your twitter username and I'll send you a shout out for "
@@ -297,11 +321,19 @@ msgstr ""
 "developers. Include your twitter username and I'll send you a shout out for "
 "your generosity. Thank you!"
 
-#: lib/settings.php:449
+#: lib/settings.php:476
+msgid "API Status Check"
+msgstr "API Status Check"
+
+#: lib/settings.php:483
+msgid "Check Status"
+msgstr "Check Status"
+
+#: lib/settings.php:501
 msgid "Data Options"
 msgstr "Data Options"
 
-#: lib/settings.php:452
+#: lib/settings.php:504
 msgid ""
 "Click the button below to refresh the click count data for all posts with a "
 "YOURLS link."
@@ -309,47 +341,47 @@ msgstr ""
 "Click the button below to refresh the click count data for all posts with a "
 "YOURLS link."
 
-#: lib/settings.php:453
+#: lib/settings.php:505
 msgid "Refresh Click Counts"
 msgstr "Refresh Click Counts"
 
-#: lib/settings.php:459
+#: lib/settings.php:511
 msgid "Click the button below to attempt an import of existing YOURLS links."
 msgstr "Click the button below to attempt an import of existing YOURLS links."
 
-#: lib/settings.php:460
+#: lib/settings.php:512
 msgid "Import Existing URLs"
 msgstr "Import Existing URLs"
 
-#: lib/settings.php:466
+#: lib/settings.php:518
 msgid "Using Ozh's plugin? Click here to convert the existing meta keys"
 msgstr "Using Ozh's plugin? Click here to convert the existing meta keys"
 
-#: lib/settings.php:467
+#: lib/settings.php:519
 msgid "Convert Meta Keys"
 msgstr "Convert Meta Keys"
 
-#: lib/settings.php:483
+#: lib/settings.php:535
 msgid "Additional Links"
 msgstr "Additional Links"
 
-#: lib/settings.php:486
+#: lib/settings.php:538
 msgid "YOURLS homepage"
 msgstr "YOURLS homepage"
 
-#: lib/settings.php:487
+#: lib/settings.php:539
 msgid "Plugin on WP.org"
 msgstr "Plugin on WP.org"
 
-#: lib/settings.php:488
+#: lib/settings.php:540
 msgid "Plugin on GitHub"
 msgstr "Plugin on GitHub"
 
-#: lib/settings.php:489
+#: lib/settings.php:541
 msgid "Support Forum"
 msgstr "Support Forum"
 
-#: lib/settings.php:504
+#: lib/settings.php:556
 msgid "PayPal - The safer, easier way to pay online!"
 msgstr "PayPal - The safer, easier way to pay online!"
 

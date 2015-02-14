@@ -36,7 +36,6 @@ class YOURLSCreator_Admin
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts',        array( $this, 'scripts_styles'      ),  10      );
 		add_action( 'add_meta_boxes',               array( $this, 'yourls_metabox'      ),  11      );
-		add_action( 'yourls_cron',                  array( $this, 'yourls_click_cron'   )           );
 		add_action( 'save_post',                    array( $this, 'yourls_on_save'      )           );
 		add_action( 'manage_posts_custom_column',   array( $this, 'display_columns'     ),  10, 2   );
 		add_filter( 'manage_posts_columns',         array( $this, 'register_columns'    )           );
@@ -146,39 +145,6 @@ class YOURLSCreator_Admin
 	}
 
 	/**
-	 * run update job to get click counts via cron
-	 *
-	 * @return void
-	 */
-	public function yourls_click_cron() {
-
-		// bail if the API key or URL have not been entered
-		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
-			return;
-		}
-
-		// fetch the IDs that contain a YOURLS url meta key
-		$items  = YOURLSCreator_Helper::get_yourls_post_ids();
-
-		// bail if none are present
-		if ( empty( $items ) ) {
-			return false;
-		}
-
-		// loop the IDs
-		foreach ( $items as $item_id ) {
-
-			// get my click number
-			$clicks = YOURLSCreator_Helper::get_single_click_count( $item_id );
-
-			// and update my meta
-			if ( ! empty( $clicks['clicknm'] ) ) {
-				update_post_meta( $item_id, '_yourls_clicks', $clicks['clicknm'] );
-			}
-		}
-	}
-
-	/**
 	 * Create yourls link on publish if one doesn't exist
 	 *
 	 * @param  integer $post_id [description]
@@ -192,8 +158,8 @@ class YOURLSCreator_Admin
 			return;
 		}
 
-		// bail if we aren't working with a published post
-		if ( 'publish' !== get_post_status( $post_id ) ) {
+		// bail if we aren't working with a published or scheduled post
+		if ( ! in_array( get_post_status( $post_id ), YOURLSCreator_Helper::get_yourls_status( 'save' ) ) ) {
 			return;
 		}
 
@@ -303,9 +269,9 @@ class YOURLSCreator_Admin
 			return $actions;
 		}
 
-		// bail if we aren't working with a published post
-		if ( 'publish' !== get_post_status( $post->ID ) ) {
-			return $actions;
+		// bail if we aren't working with a published or scheduled post
+		if ( ! in_array( get_post_status( $post->ID ), YOURLSCreator_Helper::get_yourls_status() ) ) {
+			return;
 		}
 
 		// check for existing and add our new action

@@ -114,7 +114,7 @@ class YOURLSCreator_Settings
 
 		// check and sanitize the URL
 		if ( ! empty( $data['url'] ) ) {
-			$store['url']   = esc_url( $data['url'] );
+			$store['url']   = esc_url( YOURLSCreator_Helper::strip_trailing_slash( $data['url'] ) );
 		}
 
 		// check and sanitize the API key
@@ -125,6 +125,11 @@ class YOURLSCreator_Settings
 		// check the boolean for autosave
 		if ( ! empty( $data['sav'] ) ) {
 			$store['sav']   = true;
+		}
+
+		// check the boolean for scheduled
+		if ( ! empty( $data['sch'] ) ) {
+			$store['sch']   = true;
 		}
 
 		// check the boolean for shortlink
@@ -157,6 +162,9 @@ class YOURLSCreator_Settings
 	 * @return [type]       [description]
 	 */
 	public static function save_redirect_settings( $data = array(), $key = 'yourls-settings' ) {
+
+		// first purge the API check
+		delete_option( 'yourls_api_test' );
 
 		// delete if empty, else go through some checks
 		if ( empty( $data ) ) {
@@ -258,7 +266,7 @@ class YOURLSCreator_Settings
 			?>
 
 		   	<div class="yourls-form-text">
-		   	<p><?php _e( 'Below are the basic settings for the YOURLS creator', 'wpyourls' ); ?></p>
+		   	<p><?php _e( 'Below are the basic settings for the YOURLS creator. A reminder, your YOURLS install cannot be public.', 'wpyourls' ); ?></p>
 			</div>
 
 			<div class="yourls-form-options">
@@ -271,6 +279,7 @@ class YOURLSCreator_Settings
 				$url    = ! empty( $data['url'] ) ? $data['url'] : '';
 				$api    = ! empty( $data['api'] ) ? $data['api'] : '';
 				$save   = ! empty( $data['sav'] ) ? true : false;
+				$schd   = ! empty( $data['sch'] ) ? true : false;
 				$short  = ! empty( $data['sht'] ) ? true : false;
 				$cpts   = ! empty( $data['cpt'] ) ? true : false;
 				$types  = ! empty( $data['typ'] ) ? (array) $data['typ'] : array();
@@ -302,7 +311,15 @@ class YOURLSCreator_Settings
 						<th><?php _e( 'Auto generate links', 'wpyourls' ) ?></th>
 						<td class="setting-item">
 							<input type="checkbox" name="yourls-options[sav]" id="yourls-sav" value="true" <?php checked( $save, true ); ?> />
-							<label for="yourls-sav"><?php _e( 'Create a YOURLS link whenever a post is saved.', 'wpyourls' ); ?></label>
+							<label for="yourls-sav"><?php _e( 'Create a YOURLS link when a post is saved.', 'wpyourls' ); ?></label>
+						</td>
+					</tr>
+
+					<tr>
+						<th><?php _e( 'Scheduled Content', 'wpyourls' ) ?></th>
+						<td class="setting-item">
+							<input type="checkbox" name="yourls-options[sch]" id="yourls-sch" value="true" <?php checked( $schd, true ); ?> />
+							<label for="yourls-sch"><?php _e( 'Create a YOURLS link when a scheduled post publishes.', 'wpyourls' ); ?></label>
 						</td>
 					</tr>
 
@@ -402,6 +419,10 @@ class YOURLSCreator_Settings
 			</div>
 
 			<div class="meta-box-sortables">
+				<?php self::sidebox_status(); ?>
+			</div>
+
+			<div class="meta-box-sortables">
 				<?php self::sidebox_data(); ?>
 			</div>
 
@@ -435,6 +456,37 @@ class YOURLSCreator_Settings
 				<?php _e( 'A lot of hard work goes into building plugins - support your open source developers. Include your twitter username and I\'ll send you a shout out for your generosity. Thank you!', 'wpyourls' ); ?></p>
 
 				<?php self::side_paypal(); ?>
+			</div>
+		</div>
+
+	<?php }
+
+	/**
+	 * the status sidebox
+	 */
+	public static function sidebox_status() {
+
+		// get my API status data
+		if ( false === $data = YOURLSCreator_Helper::get_api_status_data() ) {
+			return;
+		}
+		?>
+
+		<div id="yourls-admin-status" class="postbox yourls-sidebox">
+			<h3 class="hndle" id="status-sidebar"><?php echo $data['icon']; ?><?php _e( 'API Status Check', 'wpyourls' ); ?></h3>
+			<div class="inside">
+				<form>
+
+				<p class="api-status-text"><?php echo esc_attr( $data['text'] ); ?></p>
+
+				<p class="api-status-actions">
+					<input type="button" class="yourls-click-status button-primary" value="<?php _e( 'Check Status', 'wpyourls' ); ?>" >
+					<span class="spinner yourls-spinner yourls-status-spinner"></span>
+					<?php wp_nonce_field( 'yourls_status_nonce', 'yourls_status', false, true ); ?>
+
+				</p>
+
+				</form>
 			</div>
 		</div>
 

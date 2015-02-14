@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 2.0.4
+Version: 2.0.6
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -32,7 +32,7 @@ if( ! defined( 'YOURS_DIR' ) ) {
 }
 
 if( ! defined( 'YOURS_VER' ) ) {
-	define( 'YOURS_VER', '2.0.4' );
+	define( 'YOURS_VER', '2.0.6' );
 }
 
 // Start up the engine
@@ -53,8 +53,9 @@ class YOURLSCreator
 		add_action( 'plugins_loaded',               array( $this, 'textdomain'          )           );
 		add_action( 'plugins_loaded',               array( $this, 'load_files'          )           );
 
-		register_activation_hook        ( __FILE__, array( $this, 'schedule_cron'       )           );
-		register_deactivation_hook      ( __FILE__, array( $this, 'remove_cron'         )           );
+		// handle the scheduling and removal of cron jobs
+		add_action( 'plugins_loaded',               array( $this, 'schedule_crons'      )           );
+		register_deactivation_hook      ( __FILE__, array( $this, 'remove_crons'        )           );
 	}
 
 	/**
@@ -113,28 +114,37 @@ class YOURLSCreator
 	}
 
 	/**
-	 * add our scheduled cron job
+	 * add our scheduled cron jobs
 	 *
 	 * @return [type] [description]
 	 */
-	public function schedule_cron() {
+	public function schedule_crons() {
+
+		// schedule the click check
 		if ( ! wp_next_scheduled( 'yourls_cron' ) ) {
 			wp_schedule_event( time(), 'hourly', 'yourls_cron' );
+		}
+
+		// schedule the API ping test
+		if ( ! wp_next_scheduled( 'yourls_test' ) ) {
+			wp_schedule_event( time(), 'twicedaily', 'yourls_test' );
 		}
 	}
 
 	/**
-	 * remove the cron job on deactivation
+	 * remove the cron jobs on deactivation
 	 *
 	 * @return [type] [description]
 	 */
-	public function remove_cron() {
+	public function remove_crons() {
 
-		// fetch the timestamp
-		$stamp = wp_next_scheduled( 'yourls_cron' );
+		// fetch the timestamps
+		$click  = wp_next_scheduled( 'yourls_cron' );
+		$check  = wp_next_scheduled( 'yourls_test' );
 
-		// remove the job
-		wp_unschedule_event( $stamp, 'yourls_cron' );
+		// remove the jobs
+		wp_unschedule_event( $click, 'yourls_cron' );
+		wp_unschedule_event( $check, 'yourls_test' );
 	}
 
 /// end class

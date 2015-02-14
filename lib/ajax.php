@@ -38,6 +38,7 @@ class YOURLSCreator_Ajax
 		add_action( 'wp_ajax_delete_yourls',        array( $this, 'delete_yourls'       )           );
 		add_action( 'wp_ajax_stats_yourls',         array( $this, 'stats_yourls'        )           );
 		add_action( 'wp_ajax_inline_yourls',        array( $this, 'inline_yourls'       )           );
+		add_action( 'wp_ajax_status_yourls',        array( $this, 'status_yourls'       )           );
 		add_action( 'wp_ajax_refresh_yourls',       array( $this, 'refresh_yourls'      )           );
 		add_action( 'wp_ajax_convert_yourls',       array( $this, 'convert_yourls'      )           );
 		add_action( 'wp_ajax_import_yourls',        array( $this, 'import_yourls'       )           );
@@ -89,8 +90,8 @@ class YOURLSCreator_Ajax
 		// now cast the post ID
 		$post_id    = absint( $_POST['post_id'] );
 
-		// bail if we aren't working with a published post
-		if ( 'publish' !== get_post_status( $post_id ) ) {
+		// bail if we aren't working with a published or scheduled post
+		if ( ! in_array( get_post_status( $post_id ), YOURLSCreator_Helper::get_yourls_status() ) ) {
 			$ret['success'] = false;
 			$ret['errcode'] = 'INVALID_STATUS';
 			$ret['message'] = __( 'This is not a valid post status.', 'wpyourls' );
@@ -228,6 +229,7 @@ class YOURLSCreator_Ajax
 
 		// passed it all. go forward
 		delete_post_meta( $post_id, '_yourls_url' );
+		delete_post_meta( $post_id, '_yourls_clicks' );
 
 		// and do the API return
 		$ret['success'] = true;
@@ -340,8 +342,8 @@ class YOURLSCreator_Ajax
 		// now cast the post ID
 		$post_id    = absint( $_POST['post_id'] );
 
-		// bail if we aren't working with a published post
-		if ( 'publish' !== get_post_status( $post_id ) ) {
+		// bail if we aren't working with a published or scheduled post
+		if ( ! in_array( get_post_status( $post_id ), YOURLSCreator_Helper::get_yourls_status() ) ) {
 			$ret['success'] = false;
 			$ret['errcode'] = 'INVALID_STATUS';
 			$ret['message'] = __( 'This is not a valid post status.', 'wpyourls' );
@@ -420,6 +422,84 @@ class YOURLSCreator_Ajax
 			$ret['success'] = true;
 			$ret['message'] = __( 'You have created a new YOURLS link.', 'wpyourls' );
 			$ret['rowactn'] = '<span class="update-yourls">' . YOURLSCreator_Helper::update_row_action( $post_id ) . '</span>';
+			echo json_encode( $ret );
+			die();
+		}
+
+		// we've reached the end, and nothing worked....
+		$ret['success'] = false;
+		$ret['errcode'] = 'UNKNOWN';
+		$ret['message'] = __( 'There was an unknown error.', 'wpyourls' );
+		echo json_encode( $ret );
+		die();
+	}
+
+	/**
+	 * run the status check on call
+	 */
+	public function status_yourls() {
+
+		// only run on admin
+		if ( ! is_admin() ) {
+			die();
+		}
+
+		// start our return
+		$ret = array();
+
+		// verify our nonce
+		$check	= check_ajax_referer( 'yourls_status_nonce', 'nonce', false );
+
+		// check to see if our nonce failed
+		if( ! $check ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NONCE_FAILED';
+			$ret['message'] = __( 'The nonce did not validate.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail if the API key or URL have not been entered
+		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_API_DATA';
+			$ret['message'] = __( 'No API data has been entered.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// make the API call
+		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'db-stats' );
+
+		// handle the check and set it
+		$check  = ! empty( $build ) && false !== $build['success'] ? 'connect' : 'noconnect';
+
+		// set the option return
+		if ( false !== get_option( 'yourls_api_test' ) ) {
+			update_option( 'yourls_api_test', $check );
+		} else {
+			add_option( 'yourls_api_test', $check, null, 'no' );
+		}
+
+		// now get the API data
+		$data	= YOURLSCreator_Helper::get_api_status_data();
+
+		// check to see if no data happened
+		if( empty( $data ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_STATUS_DATA';
+			$ret['message'] = __( 'The status of the YOURLS API could not be determined.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// if we have data, send back things
+		if(	! empty( $data ) ) {
+			$ret['success'] = true;
+			$ret['errcode'] = null;
+			$ret['baricon'] = $data['icon'];
+			$ret['message'] = $data['text'];
+			$ret['stcheck'] = '<span class="dashicons dashicons-yes api-status-checkmark"></span>';
 			echo json_encode( $ret );
 			die();
 		}

@@ -25,7 +25,6 @@ input#yourls-api::-ms-clear {
 	display: none !important;
 }
 
-
 /* settings sidebar */
 div.yourls-sidebox {}
 
@@ -44,6 +43,45 @@ div.yourls-sidebox span.yourls-spinner {
 	vertical-align: top;
 	display: inline-block;
 	visibility: hidden;
+}
+
+/* status specific */
+div#yourls-admin-status .inside {
+	margin-top: 0;
+	padding-top: 18px;
+}
+
+div#yourls-admin-status p {
+	margin: 0 0 1em;
+}
+
+div#yourls-admin-status span.api-status-icon {
+	height: 14px;
+	width: 14px;
+	border-radius: 50%;
+	background: #ccc;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 7px;
+	position: relative;
+	top: -1px;
+}
+
+div#yourls-admin-status span.api-status-icon-good {
+	background: green;
+}
+
+div#yourls-admin-status span.api-status-icon-bad {
+	background: red;
+}
+
+div#yourls-admin-status p.api-status-actions {}
+
+div#yourls-admin-status p.api-status-actions span.api-status-checkmark {
+	color: #6666FF;
+	font-size: 28px;
+	height: 28px;
+	width: 28px;
 }
 
 /* table */
@@ -73,7 +111,7 @@ table.yourls-table td.setting-item label {
 }
 
 /* post table */
-table th#yourls-click {
+table th.column-yourls-click {
 	text-align: left;
 	width: 4em;
 	vertical-align: middle;

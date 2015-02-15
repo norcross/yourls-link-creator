@@ -124,8 +124,8 @@ class YOURLSCreator_Global
 	 * generate a YOURLS link when a post is
 	 * automatically moved from future to publish
 	 *
-	 * @param  [type] $post [description]
-	 * @return [type]       [description]
+	 * @param  [type] $post_id [description]
+	 * @return [type]          [description]
 	 */
 	public function yourls_on_schedule( $post_id ) {
 		YOURLSCreator_Helper::get_single_shorturl( $post_id, 'sch' );
@@ -177,7 +177,7 @@ class YOURLSCreator_Global
 		}
 
 		// make the API call
-		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'db-stats' );
+		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'db-stats', array(), false );
 
 		// handle the check and set it
 		$check  = ! empty( $build ) && false !== $build['success'] ? 'connect' : 'noconnect';

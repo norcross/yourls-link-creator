@@ -271,7 +271,7 @@ class YOURLSCreator_Admin
 
 		// bail if we aren't working with a published or scheduled post
 		if ( ! in_array( get_post_status( $post->ID ), YOURLSCreator_Helper::get_yourls_status() ) ) {
-			return;
+			return $actions;
 		}
 
 		// check for existing and add our new action

@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Link Creator
 Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
 Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 2.0.6
+Version: 2.0.7
 Author: Andrew Norcross
 Author URI: http://andrewnorcross.com
 
@@ -32,7 +32,7 @@ if( ! defined( 'YOURS_DIR' ) ) {
 }
 
 if( ! defined( 'YOURS_VER' ) ) {
-	define( 'YOURS_VER', '2.0.6' );
+	define( 'YOURS_VER', '2.0.7' );
 }
 
 // Start up the engine

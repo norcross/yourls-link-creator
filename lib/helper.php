@@ -400,7 +400,7 @@ class YOURLSCreator_Helper
 		}
 
 		// make the API call
-		$build  = self::run_yourls_api_call( 'url-stats', array( 'shorturl' => esc_url( $url ) ) );
+		$build  = self::run_yourls_api_call( 'url-stats', array( 'shorturl' => esc_url( $url ) ), false );
 
 		// bail if empty data or error received
 		if ( empty( $build ) || false === $build['success'] ) {

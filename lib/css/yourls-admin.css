@@ -119,9 +119,9 @@ table th.column-yourls-click {
 }
 
 table td.column-yourls-click {
-    padding: 8px 0;
-    text-align: left;
-    width: 4em;
+	padding: 8px 0;
+	text-align: left;
+	width: 4em;
 }
 
 div.row-actions a.yourls-admin-row-link:focus {

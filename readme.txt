@@ -4,8 +4,8 @@ Website Link: http://andrewnorcross.com/plugins/yourls-link-creator/
 Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.6
-Tested up to: 4.1
-Stable tag: 2.0.7
+Tested up to: 4.2
+Stable tag: 2.0.8-dev
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,11 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 == Changelog ==
+
+= 2.0.8 - 00/00/0000 =
+* added ability to set custom keyword prior to save
+* added `yourls_user_cap` filter for modifying default user capability
+* added `yourls_keyword_filter` filter for changing default keyword sanitation
 
 = 2.0.7 - 02/14/2015 =
 * fixed bug with post row actions missing on drafts

@@ -36,6 +36,7 @@ class YOURLSCreator_Admin
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts',        array( $this, 'scripts_styles'      ),  10      );
 		add_action( 'add_meta_boxes',               array( $this, 'yourls_metabox'      ),  11      );
+		add_action( 'save_post',                    array( $this, 'yourls_keyword'      )           );
 		add_action( 'save_post',                    array( $this, 'yourls_on_save'      )           );
 		add_action( 'manage_posts_custom_column',   array( $this, 'display_columns'     ),  10, 2   );
 		add_filter( 'manage_posts_columns',         array( $this, 'register_columns'    )           );
@@ -85,11 +86,6 @@ class YOURLSCreator_Admin
 		// fetch the global post object
 		global $post;
 
-		// first check our post status
-		if ( ! in_array( $post->post_status, array( 'publish', 'future', 'pending' ) ) ) {
-			return;
-		}
-
 		// make sure we're working with an approved post type
 		if ( ! in_array( $post->post_type, YOURLSCreator_Helper::get_yourls_types() ) ) {
 			return;
@@ -101,7 +97,7 @@ class YOURLSCreator_Admin
 		}
 
 		// only fire if user has the option
-		if ( ! current_user_can( 'manage_options', $post->ID ) ) {
+		if(	false === $check = YOURLSCreator_Helper::check_yourls_cap() ) {
 			return;
 		}
 
@@ -141,6 +137,39 @@ class YOURLSCreator_Admin
 
 			// and echo the box
 			echo YOURLSCreator_Helper::get_yourls_linkbox( $link, $post_id, $count );
+		}
+	}
+
+	/**
+	 * our check for a custom YOURLS keyword
+	 *
+	 * @param  integer $post_id [description]
+	 *
+	 * @return void
+	 */
+	public function yourls_keyword( $post_id ) {
+
+		// run various checks to make sure we aren't doing anything weird
+		if ( YOURLSCreator_Helper::meta_save_check( $post_id ) ) {
+			return;
+		}
+
+		// make sure we're working with an approved post type
+		if ( ! in_array( get_post_type( $post_id ), YOURLSCreator_Helper::get_yourls_types() ) ) {
+			return;
+		}
+
+		// we have a keyword and we're going to store it
+		if( ! empty( $_POST['yourls-keyw'] ) ) {
+
+			// sanitize it
+			$keywd  = YOURLSCreator_Helper::prepare_api_keyword( $_POST['yourls-keyw'] );
+
+			// update the post meta
+			update_post_meta( $post_id, '_yourls_keyword', $keywd );
+		} else {
+			// delete it if none was passed
+			delete_post_meta( $post_id, '_yourls_keyword' );
 		}
 	}
 

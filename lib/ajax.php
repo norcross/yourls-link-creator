@@ -384,8 +384,11 @@ class YOURLSCreator_Ajax
 		// get my post URL and title
 		$title  = get_the_title( $post_id );
 
+		// check for a keyword
+		$keywd  = YOURLSCreator_Helper::get_yourls_keyword( $post_id );
+
 		// set my args for the API call
-		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ) );
+		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ), 'keyword' => $keywd );
 
 		// make the API call
 		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', $args );

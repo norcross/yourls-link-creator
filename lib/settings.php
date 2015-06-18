@@ -252,8 +252,9 @@ class YOURLSCreator_Settings
 	public static function yourls_settings_page() {
 
 		// bail if current user cannot manage options
-		if ( ! current_user_can( 'manage_options' ) )
+		if(	false === $check = YOURLSCreator_Helper::check_yourls_cap( 'settings' ) ) {
 			return;
+		}
 		?>
 
 		<div class="wrap">

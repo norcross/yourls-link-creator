@@ -112,6 +112,21 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * check a post ID for a saved custom keyword
+	 *
+	 * @param  integer $post_id [description]
+	 * @return [type]           [description]
+	 */
+	public static function get_yourls_keyword( $post_id = 0 ) {
+
+		// check for a keyword
+		$keywd  = get_post_meta( $post_id, '_yourls_keyword', true );
+
+		// return
+		return ! empty( $keywd ) ? $keywd : false;
+	}
+
+	/**
 	 * get the two components of the API and return
 	 * them (or one if key is provided)
 	 *
@@ -230,7 +245,7 @@ class YOURLSCreator_Helper
 		}
 
 		// only fire if user has the option
-		if ( false !== $user && ! current_user_can( 'manage_options' ) ) {
+		if( false !== $user && false === $check = YOURLSCreator_Helper::check_yourls_cap( 'ajax' ) ) {
 			return array(
 				'success'   => false,
 				'errcode'   => 'INVALID_USER',
@@ -361,8 +376,11 @@ class YOURLSCreator_Helper
 		$url    = self::prepare_api_link( $post_id );
 		$title  = get_the_title( $post_id );
 
+		// check for a keyword
+		$keywd  = self::get_yourls_keyword( $post_id );
+
 		// set my args for the API call
-		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ) );
+		$args   = array( 'url' => esc_url( $url ), 'title' => sanitize_text_field( $title ), 'keyword' => $keywd );
 
 		// make the API call
 		$build  = self::run_yourls_api_call( 'shorturl', $args, false );
@@ -380,6 +398,15 @@ class YOURLSCreator_Helper
 			// update the post meta
 			update_post_meta( $post_id, '_yourls_url', $shorturl );
 			update_post_meta( $post_id, '_yourls_clicks', '0' );
+		}
+
+		// we have a keyword and we're going to store it
+		if( ! empty( $keywd ) ) {
+			// update the post meta
+			update_post_meta( $post_id, '_yourls_keyword', $keywd );
+		} else {
+			// delete it if none was passed
+			delete_post_meta( $post_id, '_yourls_keyword' );
 		}
 	}
 
@@ -534,8 +561,8 @@ class YOURLSCreator_Helper
 	 */
 	public static function get_yourls_subbox( $post_id = 0 ) {
 
-		// make the nonce
-		$nonce  = wp_create_nonce( 'yourls_editor_create' );
+		// check for a keyword
+		$keywd  = get_post_meta( $post_id, '_yourls_keyword', true );
 
 		// an empty
 		$box    = '';
@@ -544,10 +571,35 @@ class YOURLSCreator_Helper
 		$box   .= '<p class="yourls-meta-block yourls-input-block">';
 
 			// input field for the optional keyword
-			$box   .= '<input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="" tabindex="501" />';
+			$box   .= '<input id="yourls-keyw" class="yourls-keyw" size="20" type="text" name="yourls-keyw" value="' . esc_attr( $keywd ) . '" tabindex="501" />';
 
 			// simple instruction
 			$box   .= '<span class="description">' . __( 'optional keyword', 'wpyourls' ) . '</span>';
+
+		// first check our post status
+		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'future', 'pending' ) ) ) {
+			$box   .= '<p class="yourls-meta-block howto">' . __( 'a YOURLS link cannot be generated until the post is saved.', 'wpyourls' ) . '</p>';
+		} else {
+			$box   .= self::yourls_submit_box( $post_id );
+		}
+
+		// and return it
+		return $box;
+	}
+
+	/**
+	 * display the submit box (with nonce) for the metabox
+	 *
+	 * @param  integer $post_id [description]
+	 * @return [type]           [description]
+	 */
+	public static function yourls_submit_box( $post_id = 0 ) {
+
+		// make the nonce
+		$nonce  = wp_create_nonce( 'yourls_editor_create' );
+
+		// our empty
+		$box    = '';
 
 		// display the box
 		$box   .= '<p class="yourls-meta-block yourls-submit-block">';
@@ -560,7 +612,7 @@ class YOURLSCreator_Helper
 
 		$box   .= '</p>';
 
-		// and return it
+		// send it back
 		return $box;
 	}
 
@@ -577,6 +629,9 @@ class YOURLSCreator_Helper
 		// make the nonce
 		$nonce  = wp_create_nonce( 'yourls_editor_delete' );
 
+		// check for a keyword
+		$keywd  = get_post_meta( $post_id, '_yourls_keyword', true );
+
 		// an empty
 		$box    = '';
 
@@ -591,6 +646,9 @@ class YOURLSCreator_Helper
 
 		// the box with the counting
 		$box   .= '<p class="yourls-meta-block howto"> ' . sprintf( _n( 'Your YOURLS link has generated %d click.', 'Your YOURLS link has generated %d clicks.', absint( $count ), 'wpyourls' ), absint( $count ) ) .'</p>';
+
+		// hidden field for the optional keyword
+		$box   .= '<input id="yourls-keyw" class="yourls-keyw" type="hidden" name="yourls-keyw" value="' . esc_attr( $keywd ) . '" />';
 
 		// and return it
 		return $box;
@@ -696,7 +754,12 @@ class YOURLSCreator_Helper
 	 * @return [type]           [description]
 	 */
 	public static function prepare_api_keyword( $string = '' ) {
-		return preg_replace( '/[^A-Za-z0-9]/', '', $string );
+
+		// check for the filter
+		$filter = apply_filters( 'yourls_keyword_filter', '/[^A-Za-z0-9]/' );
+
+		// return it
+		return preg_replace( $filter, '', $string );
 	}
 
 	/**
@@ -739,6 +802,22 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * check the user capability with an optional filter
+	 *
+	 * @param  string $action [description]
+	 * @param  string $cap    [description]
+	 * @return [type]         [description]
+	 */
+	public static function check_yourls_cap( $action = 'display', $cap = 'edit_others_posts' ) {
+
+		// set the cap
+		$cap    = apply_filters( 'yourls_user_cap', $cap, $action );
+
+		// return it
+		return ! current_user_can( $cap ) ? false : true;
+	}
+
+	/**
 	 * check permissions on saving meta data
 	 *
 	 * @param  integer $post_id [description]
@@ -763,7 +842,7 @@ class YOURLSCreator_Helper
 		}
 
 		// Bail out if user does not have permissions
-		if ( ! empty( $post_id ) && ! current_user_can( $cap, $post_id ) ) {
+		if ( false === $check = self::check_yourls_cap( 'save' ) ) {
 			return true;
 		}
 

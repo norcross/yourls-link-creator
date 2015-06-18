@@ -27,10 +27,36 @@
  */
 if ( ! function_exists( 'yourls_display_box' ) ) {
 
-	function yourls_display_box() {
-		YOURLSCreator_Front::yourls_display();
-	}
+	function yourls_display_box( $post_id = 0, $echo = true ) {
 
+		// fetch the post ID if not provided
+		if ( empty( $post_id ) ) {
+
+			// call the object
+			global $post;
+
+			// bail if missing
+			if ( empty( $post ) || ! is_object( $post ) || empty( $post->ID ) ) {
+				return;
+			}
+
+			// set my post ID
+			$post_id	= absint( $post->ID );
+		}
+
+		// check for the link
+		if ( false === $link = YOURLSCreator_Helper::get_yourls_meta( $post_id ) ) {
+			return;
+		}
+
+		// echo the box if requested
+		if ( ! empty( $echo ) ) {
+			echo YOURLSCreator_Front::yourls_display( $post_id );
+		}
+
+		// return the box
+		return YOURLSCreator_Front::yourls_display( $post_id );
+	}
 }
 
 /**
@@ -61,7 +87,7 @@ if ( ! function_exists( 'get_yourls_shortlink' ) ) {
 		}
 
 		// echo the link if requested
-		if ( $echo === true ) {
+		if ( ! empty( $echo ) ) {
 			echo esc_url( $link );
 		}
 

@@ -58,13 +58,18 @@ class YOURLSCreator_Front
 		// call the global post object
 		global $post;
 
-		// check existing postmeta for YOURLS
-		$link   = YOURLSCreator_Helper::get_yourls_meta( $post->ID );
+		// bail without a post object
+		if ( empty( $post ) || ! is_object( $post ) || empty( $post->ID ) ) {
+			return;
+		}
+
+		// check existing postmeta for YOURLS link
+		if ( false === $link = YOURLSCreator_Helper::get_yourls_meta( $post->ID ) ) {
+			return;
+		}
 
 		// got a YOURLS? well then add it
-		if( ! empty( $link ) ) {
-			echo '<link href="' . esc_url( $link ) . '" rel="shortlink">' . "\n";
-		}
+		echo '<link href="' . esc_url( $link ) . '" rel="shortlink">' . "\n";
 	}
 
 	/**
@@ -72,16 +77,30 @@ class YOURLSCreator_Front
 	 *
 	 * @return [type] [description]
 	 */
-	public function yourls_display( $echo = true ) {
+	public function yourls_display( $post_id = 0, $echo = false ) {
 
-		// fetch the global post object
-		global $post;
+		// no display exist on non-singular items, so bail
+		if ( ! is_singular() ) {
+			return;
+		}
 
-		// check existing postmeta for YOURLS
-		$link   = YOURLSCreator_Helper::get_yourls_meta( $post->ID );
+		// fetch the post ID if not provided
+		if ( empty( $post_id ) ) {
 
-		// bail if there is no shortlink
-		if ( empty( $link ) ) {
+			// call the object
+			global $post;
+
+			// bail if missing
+			if ( empty( $post ) || ! is_object( $post ) || empty( $post->ID ) ) {
+				return;
+			}
+
+			// set my post ID
+			$post_id	= absint( $post->ID );
+		}
+
+		// check for the link
+		if ( false === $link = YOURLSCreator_Helper::get_yourls_meta( $post_id ) ) {
 			return;
 		}
 
@@ -90,16 +109,16 @@ class YOURLSCreator_Front
 
 		// build the markup
 		$show  .= '<p class="yourls-display">' . __( 'Shortlink:', 'wpyourls' );
-			$show  .= '<input id="yourls-link" size="28" title="' . __( 'click to highlight', 'wpyourls' ) . '" type="text" name="yourls-link" value="'. esc_url( $link ) .'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
+			$show  .= '<input id="yourls-link-' . absint( $post_id ) . '" class="yourls-link" size="28" title="' . __( 'click to highlight', 'wpyourls' ) . '" type="url" name="yourls-link-' . absint( $post_id ) . '" value="'. esc_url( $link ) .'" readonly="readonly" tabindex="501" onclick="this.focus();this.select()" />';
 		$show  .= '</p>';
 
 		// echo the box if requested
-		if ( $echo === true ) {
-			echo apply_filters( 'yourls_template_tag', $show, $post->ID );
+		if ( ! empty( $echo ) ) {
+			echo apply_filters( 'yourls_template_tag', $show, $post_id );
 		}
 
 		// return the box
-		return apply_filters( 'yourls_template_tag', $show, $post->ID );
+		return apply_filters( 'yourls_template_tag', $show, $post_id );
 	}
 
 // end class

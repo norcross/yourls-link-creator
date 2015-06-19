@@ -182,6 +182,11 @@ class YOURLSCreator_Admin
 	 */
 	public function yourls_on_save( $post_id ) {
 
+		// bail if this is an import since it'll potentially mess up the process
+		if ( ! empty( $_POST['import_id'] ) ) {
+			return;
+		}
+
 		// run various checks to make sure we aren't doing anything weird
 		if ( YOURLSCreator_Helper::meta_save_check( $post_id ) ) {
 			return;

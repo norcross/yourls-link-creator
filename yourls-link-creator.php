@@ -1,27 +1,31 @@
 <?php
+/**
+ * Plugin Name: YOURLS Link Creator
+ * Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
+ * Description: Creates a shortlink using YOURLS and stores as postmeta.
+ * Author: Andrew Norcross
+ * Author http://andrewnorcross.com
+ * Version: 2.0.8-dev
+ * Text Domain: wpyourls
+ * Domain Path: languages
+ */
 /*
-Plugin Name: YOURLS Link Creator
-Plugin URI: http://andrewnorcross.com/plugins/yourls-link-creator/
-Description: Creates a shortlink using YOURLS and stores as postmeta.
-Version: 2.0.8-dev
-Author: Andrew Norcross
-Author URI: http://andrewnorcross.com
-
-	Copyright 2012 Andrew Norcross
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License, version 2, as
-	published by the Free Software Foundation.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ * Copyright 2012 Andrew Norcross
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 if( ! defined( 'YOURLS_BASE' ) ) {
 	define( 'YOURLS_BASE', plugin_basename(__FILE__) );
@@ -40,7 +44,7 @@ class YOURLSCreator
 {
 	/**
 	 * Static property to hold our singleton instance
-	 * @var Code_Docs_Core
+	 * @var instance
 	 */
 	static $instance = false;
 
@@ -78,7 +82,7 @@ class YOURLSCreator
 	/**
 	 * load textdomain for international goodness
 	 *
-	 * @return YOURLSCreator
+	 * @return textdomain
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'wpyourls', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
@@ -111,6 +115,9 @@ class YOURLSCreator
 
 		// load our template tag file
 		require_once( 'lib/display.php' );
+
+		// load our legacy file
+		require_once( 'lib/legacy.php' );
 	}
 
 	/**

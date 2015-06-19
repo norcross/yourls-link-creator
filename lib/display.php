@@ -97,27 +97,3 @@ if ( ! function_exists( 'get_yourls_shortlink' ) ) {
 
 }
 
-
-/**
- * Template tag: return/echo short URL with no formatting
- * just a straight copy of the original function from Ozh
- */
-if ( ! function_exists( 'wp_ozh_yourls_raw_url' ) ) {
-
-	function wp_ozh_yourls_raw_url( $echo = false ) {
-
-		global $id;
-
-		$short = apply_filters( 'ozh_yourls_shorturl', wp_ozh_yourls_geturl( $id ) );
-
-		if ( $short ) {
-
-			if ( $echo ) {
-				echo $short;
-			}
-
-			return $short;
-		}
-	}
-
-}

@@ -69,6 +69,7 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 * added `yourls_user_cap` filter for modifying default user capability
 * added `yourls_keyword_filter` filter for changing default keyword sanitation
 * added new legacy file to pick up old functions from Ozh's plugin
+* added GitHub plugin updater support
 
 = 2.0.7 - 02/14/2015 =
 * fixed bug with post row actions missing on drafts

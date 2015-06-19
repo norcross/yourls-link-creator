@@ -8,6 +8,7 @@
  * Version: 2.0.8-dev
  * Text Domain: wpyourls
  * Domain Path: languages
+ * GitHub Plugin URI: https://github.com/norcross/airplane-mode
  */
 /*
  * Copyright 2012 Andrew Norcross

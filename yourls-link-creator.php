@@ -5,10 +5,10 @@
  * Description: Creates a shortlink using YOURLS and stores as postmeta.
  * Author: Andrew Norcross
  * Author http://andrewnorcross.com
- * Version: 2.0.8-dev
+ * Version: 2.0.8
  * Text Domain: wpyourls
  * Domain Path: languages
- * GitHub Plugin URI: https://github.com/norcross/airplane-mode
+ * GitHub Plugin URI: https://github.com/norcross/yourls-link-creator
  */
 /*
  * Copyright 2012 Andrew Norcross

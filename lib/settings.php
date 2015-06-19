@@ -77,7 +77,7 @@ class YOURLSCreator_Settings
 	 * @return void
 	 */
 	public function yourls_menu_item() {
-		add_options_page( __( 'YOURLS Settings', 'wpyourls' ), __( 'YOURLS Settings', 'wpyourls' ), 'manage_options', 'yourls-settings', array( __class__, 'yourls_settings_page' ) );
+		add_options_page( __( 'YOURLS Settings', 'wpyourls' ), __( 'YOURLS Settings', 'wpyourls' ), apply_filters( 'yourls_settings_cap', 'manage_options' ), 'yourls-settings', array( __class__, 'yourls_settings_page' ) );
 	}
 
 	/**
@@ -252,7 +252,7 @@ class YOURLSCreator_Settings
 	public static function yourls_settings_page() {
 
 		// bail if current user cannot manage options
-		if(	false === $check = YOURLSCreator_Helper::check_yourls_cap( 'settings' ) ) {
+		if(	! current_user_can( apply_filters( 'yourls_settings_cap', 'manage_options' ) ) ) {
 			return;
 		}
 		?>

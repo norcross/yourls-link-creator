@@ -237,12 +237,16 @@ class YOURLSCreator_Admin
 
 		// we have done our error checking and we are ready to go
 		if( false !== $build['success'] && ! empty( $build['data']['shorturl'] ) ) {
+
 			// get my short URL
 			$shorturl   = esc_url( $build['data']['shorturl'] );
 
 			// update the post meta
 			update_post_meta( $post_id, '_yourls_url', $shorturl );
 			update_post_meta( $post_id, '_yourls_clicks', '0' );
+
+			// do the action after saving
+			do_action( 'yourls_after_url_save', $post_id, $shorturl );
 		}
 	}
 

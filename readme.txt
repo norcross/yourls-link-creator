@@ -64,6 +64,9 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 == Changelog ==
 
+= 2.0.9 - 08/03/2015 =
+* added `yourls_after_url_save` action to fire when the custom URL is generated and stored
+
 = 2.0.8 - 06/19/2015 =
 * added ability to set custom keyword prior to save
 * added `yourls_user_cap` filter for modifying default user capability

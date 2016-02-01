@@ -398,6 +398,9 @@ class YOURLSCreator_Helper
 			// update the post meta
 			update_post_meta( $post_id, '_yourls_url', $shorturl );
 			update_post_meta( $post_id, '_yourls_clicks', '0' );
+
+			// do the action after saving
+			do_action( 'yourls_after_url_save', $post_id, $shorturl );
 		}
 
 		// we have a keyword and we're going to store it

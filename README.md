@@ -11,7 +11,7 @@
 
 **Tested up to:** 4.2
 
-**Stable tag:** 2.0.8
+**Stable tag:** 2.1.0
 
 **License:** GPLv2 or later
 
@@ -88,6 +88,9 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 ## Changelog ##
+
+### 2.1.0 - 08/06/2015 ###
+* added `yourls_after_url_save` action to post transitioning from future to publish (scheduled posts)
 
 ### 2.0.9 - 08/03/2015 ###
 * added `yourls_after_url_save` action to fire when the custom URL is generated and stored

@@ -64,30 +64,23 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 ## Screenshots ##
 
-###1. Metabox to create YOURLS link with optional keyword field
-###
-![Metabox to create YOURLS link with optional keyword field
-](https://ps.w.org/yourls-link-creator/assets/screenshot-1.png)
+### 1. Metabox to create YOURLS link with optional keyword field ###
+![Metabox to create YOURLS link with optional keyword field](https://ps.w.org/yourls-link-creator/assets/screenshot-1.png)
 
-###2. Example of a post with a created link and click count
-###
-![Example of a post with a created link and click count
-](https://ps.w.org/yourls-link-creator/assets/screenshot-2.png)
+### 2. Example of a post with a created link and click count ###
+![Example of a post with a created link and click count](https://ps.w.org/yourls-link-creator/assets/screenshot-2.png)
 
-###3. Post column displaying click count
-###
-![Post column displaying click count
-](https://ps.w.org/yourls-link-creator/assets/screenshot-3.png)
+### 3. Post column displaying click count ###
+![Post column displaying click count](https://ps.w.org/yourls-link-creator/assets/screenshot-3.png)
 
-###4. Settings page
-###
-![Settings page
-](https://ps.w.org/yourls-link-creator/assets/screenshot-4.png)
-
-
+### 4. Settings page ###
+![Settings page](https://ps.w.org/yourls-link-creator/assets/screenshot-4.png)
 
 
 ## Changelog ##
+
+### 2.1.1 - 02/25/2016 ###
+* added `yourls_run_cron_jobs` filter to allow users to disable the cron job
 
 ### 2.1.0 - 08/06/2015 ###
 * added `yourls_after_url_save` action to post transitioning from future to publish (scheduled posts)

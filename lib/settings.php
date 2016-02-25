@@ -295,7 +295,7 @@ class YOURLSCreator_Settings
 						<th><?php _e( 'YOURLS Custom URL', 'wpyourls' ); ?></th>
 						<td>
 							<input type="url" class="regular-text code" value="<?php echo esc_url( $url ); ?>" id="yourls-url" name="yourls-options[url]">
-							<p class="description"><?php _e( 'Enter your custom YOURLS URL', 'wpyourls' ); ?></p>
+							<p class="description"><?php _e( 'Enter the domain URL for your YOURLS API', 'wpyourls' ); ?></p>
 						</td>
 					</tr>
 

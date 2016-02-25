@@ -4,8 +4,8 @@ Website Link: http://andrewnorcross.com/plugins/yourls-link-creator/
 Donate link: https://andrewnorcross.com/donate
 Tags: YOURLS, shortlink, custom URL
 Requires at least: 3.6
-Tested up to: 4.2
-Stable tag: 2.1.0
+Tested up to: 4.4
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 == Changelog ==
+
+= 2.1.1 - 02/25/2016 =
+* added `yourls_run_cron_jobs` filter to allow users to disable the cron job
 
 = 2.1.0 - 08/06/2015 =
 * added `yourls_after_url_save` action to post transitioning from future to publish (scheduled posts)

@@ -5,7 +5,7 @@
  * Description: Creates a shortlink using YOURLS and stores as postmeta.
  * Author: Andrew Norcross
  * Author http://andrewnorcross.com
- * Version: 2.1.0
+ * Version: 2.1.1
  * Text Domain: wpyourls
  * Domain Path: languages
  * GitHub Plugin URI: https://github.com/norcross/yourls-link-creator
@@ -37,7 +37,7 @@ if( ! defined( 'YOURS_DIR' ) ) {
 }
 
 if( ! defined( 'YOURS_VER' ) ) {
-	define( 'YOURS_VER', '2.1.0' );
+	define( 'YOURS_VER', '2.1.1' );
 }
 
 // Start up the engine
@@ -50,9 +50,9 @@ class YOURLSCreator
 	static $instance = false;
 
 	/**
-	 * This is our constructor
+	 * This is our constructor. There are many like it, but this one is mine.
 	 *
-	 * @return YOURLSCreator
+	 * @return void
 	 */
 	private function __construct() {
 		add_action( 'plugins_loaded',               array( $this, 'textdomain'          )           );
@@ -67,7 +67,7 @@ class YOURLSCreator
 	 * If an instance exists, this returns it.  If not, it creates one and
 	 * retuns it.
 	 *
-	 * @return
+	 * @return $instance
 	 */
 	public static function getInstance() {
 
@@ -81,7 +81,7 @@ class YOURLSCreator
 	}
 
 	/**
-	 * load textdomain for international goodness
+	 * Load textdomain for international goodness.
 	 *
 	 * @return textdomain
 	 */
@@ -90,73 +90,77 @@ class YOURLSCreator
 	}
 
 	/**
-	 * call our files in the appropriate place
+	 * Call our files in the appropriate place.
 	 *
-	 * @return [type] [description]
+	 * @return void
 	 */
 	public function load_files() {
 
-		// load our back end
+		// Load our back end.
 		if ( is_admin() ) {
 			require_once( 'lib/admin.php' );
 			require_once( 'lib/settings.php' );
 			require_once( 'lib/ajax.php' );
 		}
 
-		// load our front end
+		// Load our front end.
 		if ( ! is_admin() ) {
 			require_once( 'lib/front.php' );
 		}
 
-		// load our global
+		// Load our global.
 		require_once( 'lib/global.php' );
 
-		// load our helper file
+		// Load our helper file.
 		require_once( 'lib/helper.php' );
 
-		// load our template tag file
+		// Load our template tag file.
 		require_once( 'lib/display.php' );
 
-		// load our legacy file
+		// Load our legacy file.
 		require_once( 'lib/legacy.php' );
 	}
 
 	/**
-	 * add our scheduled cron jobs
+	 * Add our scheduled cron jobs.
 	 *
-	 * @return [type] [description]
+	 * @return void
 	 */
 	public function schedule_crons() {
 
-		// schedule the click check
+		// Optional filter to disable this all together.
+		if ( false === apply_filters( 'yourls_run_cron_jobs', true ) ) {
+			return;
+		}
+
+		// Schedule the click check.
 		if ( ! wp_next_scheduled( 'yourls_cron' ) ) {
 			wp_schedule_event( time(), 'hourly', 'yourls_cron' );
 		}
 
-		// schedule the API ping test
+		// Schedule the API ping test.
 		if ( ! wp_next_scheduled( 'yourls_test' ) ) {
 			wp_schedule_event( time(), 'twicedaily', 'yourls_test' );
 		}
 	}
 
 	/**
-	 * remove the cron jobs on deactivation
+	 * Remove the cron jobs on deactivation.
 	 *
-	 * @return [type] [description]
+	 * @return void
 	 */
 	public function remove_crons() {
 
-		// fetch the timestamps
+		// Fetch the timestamps/
 		$click  = wp_next_scheduled( 'yourls_cron' );
 		$check  = wp_next_scheduled( 'yourls_test' );
 
-		// remove the jobs
-		wp_unschedule_event( $click, 'yourls_cron' );
-		wp_unschedule_event( $check, 'yourls_test' );
+		// Remove the jobs.
+		wp_unschedule_event( $click, 'yourls_cron', array() );
+		wp_unschedule_event( $check, 'yourls_test', array() );
 	}
 
-/// end class
-}
+} // End the class.
 
-// Instantiate our class
+// Instantiate our class.
 $YOURLSCreator = YOURLSCreator::getInstance();

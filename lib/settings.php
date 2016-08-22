@@ -24,21 +24,53 @@
 
 if ( ! class_exists( 'YOURLSCreator_Settings' ) ) {
 
-// Start up the engine
+/**
+ * Set up and load our class.
+ */
 class YOURLSCreator_Settings
 {
 
 	/**
-	 * This is our constructor
+	 * Load our hooks and filters.
 	 *
-	 * @return YOURLSCreator_Settings
+	 * @return void
 	 */
-	public function __construct() {
+	public function init() {
+		add_action( 'admin_enqueue_scripts',        array( $this, 'scripts_styles'      ),  10      );
 		add_action( 'admin_menu',                   array( $this, 'yourls_menu_item'    )           );
 		add_action( 'admin_init',                   array( $this, 'reg_settings'        )           );
 		add_action( 'admin_init',                   array( $this, 'store_settings'      )           );
 		add_action( 'admin_notices',                array( $this, 'settings_messages'   )           );
 		add_filter( 'plugin_action_links',          array( $this, 'quick_link'          ),  10, 2   );
+	}
+
+	/**
+	 * Load our admin side scripts and stylesheets.
+	 *
+	 * @param  string $hook  The admin page we are on.
+	 *
+	 * @return void
+	 */
+	public function scripts_styles( $hook ) {
+
+		// Bail if not on the right part.
+		if ( 'settings_page_yourls-settings' !== $hook ) {
+			return;
+		}
+
+		// Set our JS and CSS prefixes.
+		$file   = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'yourls-admin' : 'yourls-admin.min';
+
+		// Load the password stuff.
+		wp_enqueue_script( 'hideshow', plugins_url( '/js/hideShowPassword' . $js_sx, __FILE__ ) , array( 'jquery' ), '2.0.3', true );
+
+		// Load our files.
+		wp_enqueue_style( 'yourls-admin', plugins_url( '/css/' . $file . '.css', __FILE__ ), array(), YOURLS_VER, 'all' );
+		wp_enqueue_script( 'yourls-admin', plugins_url( '/js/' . $file . '.js', __FILE__ ) , array( 'jquery' ), YOURLS_VER, true );
+		wp_localize_script( 'yourls-admin', 'yourlsAdmin', array(
+			'shortSubmit'   => '<a onclick="prompt(\'URL:\', jQuery(\'#shortlink\').val()); return false;" class="button button-small" href="#">' . __( 'Get Shortlink' ) . '</a>',
+			'defaultError'  => __( 'There was an error with your request.' )
+		));
 	}
 
 	/**
@@ -587,12 +619,11 @@ class YOURLSCreator_Settings
 
 	<?php }
 
-// end class
+	// End class.
 }
 
-// end exists check
-}
+} // End the exists check.
 
-// Instantiate our class
-new YOURLSCreator_Settings();
-
+// Instantiate our class.
+$YOURLSCreator_Settings = new YOURLSCreator_Settings();
+$YOURLSCreator_Settings->init();

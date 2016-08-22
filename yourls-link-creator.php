@@ -28,56 +28,39 @@
  *
  */
 
-if( ! defined( 'YOURLS_BASE' ) ) {
+// Set my base for the plugin.
+if ( ! defined( 'YOURLS_BASE' ) ) {
 	define( 'YOURLS_BASE', plugin_basename(__FILE__) );
 }
 
-if( ! defined( 'YOURS_DIR' ) ) {
-	define( 'YOURS_DIR', plugin_dir_path( __FILE__ ) );
+// Set my directory for the plugin.
+if ( ! defined( 'YOURLS_DIR' ) ) {
+	define( 'YOURLS_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-if( ! defined( 'YOURS_VER' ) ) {
-	define( 'YOURS_VER', '2.1.1' );
+// Set my version for the plugin.
+if ( ! defined( 'YOURLS_VER' ) ) {
+	define( 'YOURLS_VER', '2.1.1' );
 }
 
-// Start up the engine
+/**
+ * Set up and load our class.
+ */
 class YOURLSCreator
 {
-	/**
-	 * Static property to hold our singleton instance
-	 * @var instance
-	 */
-	static $instance = false;
 
 	/**
-	 * This is our constructor. There are many like it, but this one is mine.
+	 * Load our hooks and filters.
 	 *
 	 * @return void
 	 */
-	private function __construct() {
+	public function init() {
 		add_action( 'plugins_loaded',               array( $this, 'textdomain'          )           );
 		add_action( 'plugins_loaded',               array( $this, 'load_files'          )           );
 
-		// handle the scheduling and removal of cron jobs
+		// Handle the scheduling and removal of cron jobs.
 		add_action( 'plugins_loaded',               array( $this, 'schedule_crons'      )           );
 		register_deactivation_hook      ( __FILE__, array( $this, 'remove_crons'        )           );
-	}
-
-	/**
-	 * If an instance exists, this returns it.  If not, it creates one and
-	 * retuns it.
-	 *
-	 * @return $instance
-	 */
-	public static function getInstance() {
-
-		// load an instance if not already initalized
-		if ( ! self::$instance ) {
-			self::$instance = new self;
-		}
-
-		// return the instance
-		return self::$instance;
 	}
 
 	/**
@@ -96,10 +79,17 @@ class YOURLSCreator
 	 */
 	public function load_files() {
 
+		// Load our global.
+		require_once( 'lib/global.php' );
+
+		// Load our helper file.
+		require_once( 'lib/helper.php' );
+
 		// Load our back end.
 		if ( is_admin() ) {
-			require_once( 'lib/admin.php' );
 			require_once( 'lib/settings.php' );
+			require_once( 'lib/postmeta.php' );
+			require_once( 'lib/termmeta.php' );
 			require_once( 'lib/ajax.php' );
 		}
 
@@ -107,12 +97,6 @@ class YOURLSCreator
 		if ( ! is_admin() ) {
 			require_once( 'lib/front.php' );
 		}
-
-		// Load our global.
-		require_once( 'lib/global.php' );
-
-		// Load our helper file.
-		require_once( 'lib/helper.php' );
 
 		// Load our template tag file.
 		require_once( 'lib/display.php' );
@@ -160,7 +144,9 @@ class YOURLSCreator
 		wp_unschedule_event( $check, 'yourls_test', array() );
 	}
 
-} // End the class.
+	// End the class.
+}
 
 // Instantiate our class.
-$YOURLSCreator = YOURLSCreator::getInstance();
+$YOURLSCreator = new YOURLSCreator();
+$YOURLSCreator->init();

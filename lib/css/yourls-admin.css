@@ -183,3 +183,43 @@ div#yourls-post-display p.yourls-exist-block span.yourls-delete:hover {
 	filter: alpha(opacity=100);
 	opacity: 1;
 }
+
+/* term meta */
+
+.yourls-term-new-create-field input,
+.yourls-term-new-create-field label {
+	display: inline-block;
+	vertical-align: middle;
+	width: auto;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.yourls-term-new-keyword-field {
+	display: none;
+}
+
+.yourls-term-new-keyword-field input#yourls-new-term-keyword {
+	width: 10em;
+	margin-right: 5px;
+}
+
+.yourls-term-new-keyword-field-show {
+	display: block;
+}
+
+.form-field.yourls-term-form-field th label {
+	vertical-align: top;
+}
+
+.form-field.yourls-term-form-field p {
+	margin: 0 0 5px;
+}
+
+.form-field.yourls-term-form-field input#yourls-term-keyword {
+	width: 10em;
+	margin-right: 5px;
+}
+
+.form-field.yourls-term-form-field input.yourls-api {
+}

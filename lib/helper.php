@@ -24,186 +24,209 @@
 
 if ( ! class_exists( 'YOURLSCreator_Helper' ) ) {
 
-// Start up the engine
+/**
+ * Set up and load our class.
+ */
 class YOURLSCreator_Helper
 {
 
 	/**
-	 * get an option from the serialized array
-	 * or the entire thing
+	 * Get an option from the serialized array or the entire thing.
 	 *
-	 * @param  string $key [description]
-	 * @return [type]      [description]
+	 * @param  string $key   The key inside the serialized array.
+	 *
+	 * @return mixed  $data  The single data item, the entire array, or false if none.
 	 */
 	public static function get_yourls_option( $key = '' ) {
 
-		// fetch the data
-		$data   = get_option( 'yourls_options' );
+		// Fetch the entire data array.
+		$data   = get_option( 'yourls_options', array() );
 
-		// bail if none exists
+		// Bail if none exists.
 		if ( empty( $data ) ) {
 			return false;
 		}
 
-		// return the entire thing if no key is requested
+		// Return the entire thing if no key is requested.
 		if ( empty( $key ) ) {
 			return $data;
 		}
 
-		// return the specific key if it exists
-		if ( ! empty( $key ) && isset( $data[$key] ) ) {
+		// Return the specific key if it exists.
+		if ( ! empty( $key ) && isset( $data[ $key ] ) ) {
 			return $data[$key];
 		}
 
-		// return false, nothing there
+		// Return false, nothing there.
 		return false;
 	}
 
 	/**
-	 * get a post meta item with YOURLS data
+	 * Get a post meta item with YOURLS data.
 	 *
-	 * @param  integer $post_id  [description]
-	 * @param  string  $key      [description]
-	 * @param  string  $fallback [description]
-	 * @return [type]            [description]
+	 * @param  integer $post_id   The post ID tied to the meta.
+	 * @param  string  $key       The meta key to look up.
+	 * @param  string  $fallback  An optional default value if none exists.
+	 *
+	 * @return mixed              The postmeta data, fallback value, or false.
 	 */
 	public static function get_yourls_meta( $post_id = 0, $key = '_yourls_url', $fallback = false ) {
 
-		// get my item
+		// Fetch my postmmeta item.
 		$item	= get_post_meta( $post_id, $key, true );
 
-		// return the item if there
+		// Return the item if there.
 		if ( ! empty( $item ) ) {
 			return $item;
 		}
 
-		// return either empty or fallback
+		// Return either empty or fallback.
 		return isset( $fallback ) ? $fallback : false;
 	}
 
 	/**
-	 * get the post types that YOURLS is enabled for
+	 * Get the post types that YOURLS is enabled for.
 	 *
-	 * @return [type] [description]
+	 * @return array  The array of enabled post types.
 	 */
 	public static function get_yourls_types() {
 
-		// fetch any custom post types and merge with the built in
+		// Fetch any custom post types saved by the user.
 		$custom = self::get_yourls_option( 'typ' );
+
+		// Build an array of the default post types we are enabling.
 		$built  = array( 'post' => 'post', 'page' => 'page' );
 
-		// return the full array
+		// Filter the default enabled post types.
+		$built  = apply_filters( 'yourls_post_types', $built );
+
+		// Return the full array.
 		return ! empty( $custom ) ? array_merge( $custom, $built ) : $built;
 	}
 
 	/**
-	 * get the post statuses allowed
-	 * @return [type] [description]
+	 * Get the terms that YOURLS is enabled for.
+	 *
+	 * @return array  The array of enabled terms.
+	 */
+	public static function get_yourls_terms() {
+
+		// Build and return the array of terms.
+		return apply_filters( 'yourls_post_terms', array( 'category', 'post_tag' ) );
+	}
+
+	/**
+	 * Get the post statuses that YOURLS is enabled for.
+	 *
+	 * @return array  The array of enabled post statuses.
 	 */
 	public static function get_yourls_status( $action = '' ) {
 
-		// return only publish for saving
-		if ( ! empty( $action ) && $action == 'save' ) {
+		// Return only publish for saving.
+		if ( ! empty( $action ) && 'save' === $action ) {
 			return apply_filters( 'yourls_post_status', array( 'publish' ), $action  );
 		}
 
-		// return the default
+		// Return the default, filtered.
 		return apply_filters( 'yourls_post_status', array( 'publish', 'future' ), $action );
 	}
 
 	/**
-	 * check a post ID for a saved custom keyword
+	 * Check a post ID for a saved custom keyword.
 	 *
-	 * @param  integer $post_id [description]
-	 * @return [type]           [description]
+	 * @param  integer $post_id  The post ID tied to the meta.
+	 *
+	 * @return string            Either the keyword, or false.
 	 */
 	public static function get_yourls_keyword( $post_id = 0 ) {
 
-		// check for a keyword
+		// Check for a keyword.
 		$keywd  = get_post_meta( $post_id, '_yourls_keyword', true );
 
-		// return
+		// Return our keyword, or false.
 		return ! empty( $keywd ) ? $keywd : false;
 	}
 
 	/**
-	 * get the two components of the API and return
-	 * them (or one if key is provided)
+	 * Get the two components of the API and return them (or one if key is provided).
 	 *
-	 * @param  string $key [description]
-	 * @return [type]      [description]
+	 * @param  string $key  Optional single key stored as part of the API data.
+	 *
+	 * @return mixed        The entire data array, or a single key.
 	 */
 	public static function get_yourls_api_data( $key = '' ) {
 
-		// fetch the stored option array
+		// Fetch the stored option array.
 		$option = self::get_yourls_option();
 
-		// if anything is missing, return false
+		// If anything is missing, return false.
 		if ( empty( $option ) || empty( $option['url'] ) || empty( $option['api'] ) ) {
 			return false;
 		}
 
-		// make a data array
+		// Make a data array.
 		$data   = array( 'url' => $option['url'], 'key' => $option['api'] );
 
-		// return one or the entire thing
-		return empty( $key ) ? $data : $data[$key];
+		// Return one or the entire thing.
+		return empty( $key ) ? $data : $data[ $key ];
 	}
 
 	/**
-	 * get all the post IDs that contain the YOURLS url
+	 * Get all the post IDs that contain the YOURLS url.
 	 *
-	 * @return array the post IDs containing the meta key
+	 * @param  string $key  The meta key in the database we want to fetch.
+	 *
+	 * @return array        The post IDs containing the meta key.
 	 */
 	public static function get_yourls_post_ids( $key = '_yourls_url' ) {
 
-		// call the global database
+		// Call the global database.
 		global $wpdb;
 
-		// set up our query
+		// Set up our query.
 		$query  = $wpdb->prepare("
 			SELECT	post_id
 			FROM	$wpdb->postmeta
 			WHERE	meta_key = '%s'
 		", esc_sql( $key ) );
 
-		// fetch the column
+		// Fetch the column.
 		$ids    = $wpdb->get_col( $query );
 
-		// return the array of IDs or false if none
+		// Return the array of IDs or false if none.
 		return ! empty( $ids ) ? $ids : false;
 	}
 
 	/**
-	 * get the API endpoint URL
+	 * Get the API endpoint URL.
 	 *
-	 * @return string   the URL
+	 * @return string   The stored API endpoint.
 	 */
 	public static function get_yourls_api_url() {
 
-		// fetch the stored base URL link
+		// Fetch the stored base URL link.
 		$stored = self::get_yourls_api_data( 'url' );
 
-		// parse the link
+		// Parse the link.
 		$parsed = parse_url( esc_url( $stored ) );
 
-		// bail if its too malformed or our pieces are missing
+		// Bail if its too malformed or our pieces are missing.
 		if ( ! $parsed || empty( $parsed['scheme'] ) || empty( $parsed['host'] ) ) {
 			return false;
 		}
 
-		// build the base URL again
+		// Build the base URL again.
 		$base   = $parsed['scheme'] . '://' . $parsed['host'];
 
-		// check for a subfolder and add the path if it exists
+		// Check for a subfolder and add the path if it exists.
 		if ( ! empty( $parsed['path'] ) ) {
 			$base   = self::strip_trailing_slash( $base ) . $parsed['path'];
 		}
 
-		// build the API link
+		// Build the API link.
 		$link   = self::strip_trailing_slash( $base ) . '/yourls-api.php';
 
-		// return it with optional filter
+		// Return it with optional filter.
 		return apply_filters( 'yourls_api_url', $link );
 	}
 
@@ -750,47 +773,55 @@ class YOURLSCreator_Helper
 	}
 
 	/**
-	 * take a provided keyword (if it exists) and make sure it's
-	 * sanitized properly
+	 * Take a provided keyword (if it exists) and make sure it's sanitized properly.
 	 *
-	 * @param  integer $post_id [description]
-	 * @return [type]           [description]
+	 * @param  string $string  The keyword string.
+	 *
+	 * @return string $string  The cleaned keyword string.
 	 */
 	public static function prepare_api_keyword( $string = '' ) {
 
-		// check for the filter
+		// Check for the filter.
 		$filter = apply_filters( 'yourls_keyword_filter', '/[^A-Za-z0-9]/' );
 
-		// return it
+		// Return it.
 		return preg_replace( $filter, '', $string );
 	}
 
 	/**
-	 * fetch the permalink from a post ID and return it
-	 * with optional trailing slash removed
+	 * Fetch the link from a post or term ID and return it with optional trailing slash removed.
 	 *
-	 * @param  integer $post_id [description]
-	 * @return [type]           [description]
+	 * @param  integer $item_id  The ID of the item (either a post or term).
+	 * @param  string  $term     The term we're looking up (if it's a taxonomy).
+	 *
+	 * @return string  $link     The returned URL or false if none exists.
 	 */
-	public static function prepare_api_link( $post_id = 0 ) {
+	public static function prepare_api_link( $item_id = 0 , $term = '' ) {
 
-		// bail without a link
-		if ( empty( $post_id ) ) {
+		// Bail without an ID.
+		if ( empty( $item_id ) ) {
 			return false;
 		}
 
-		// fetch the URL
-		$link   = get_permalink( $post_id );
+		// First check if we have a post object for our item and fetch the URL.
+		if ( false !== $post_data = get_post( $item_id ) ) {
+			$link   = get_permalink( $item_id );
+		}
 
-		// bail without a URL
-		if ( empty( $link ) ) {
+		// Now check if we have a post object for our item and fetch the URL.
+		if ( ! empty( $term ) && false !== $term_data = term_exists( $item_id, $term ) ) {
+			$link   = get_term_link( $item_id, $term );
+		}
+
+		// Bail without a URL.
+		if ( empty( $link ) || is_wp_error( $link ) ) {
 			return false;
 		}
 
-		// filter the strip check
-		$strip  = apply_filters( 'yourls_strip_urls', false, $post_id );
+		// Filter the strip check.
+		$strip  = apply_filters( 'yourls_strip_urls', false, $item_id );
 
-		// return the URL stripped (or not)
+		// Return the URL stripped (or not).
 		return false !== $strip ? self::strip_trailing_slash( $link ) : $link;
 	}
 

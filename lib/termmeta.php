@@ -207,7 +207,7 @@ class YOURLSCreator_TermMeta
 	public static function edit_yourls_term_link( $link = '', $term_id = 0 ) {
 
 		// Get our current click count.
-		$count  = get_term_meta( $term_id, '_yourls_term_clicks', true );
+		$count  = YOURLSCreator_Helper::get_yourls_term_meta( $term_id, '_yourls_term_clicks', 0 );
 
 		// Create a nonce for later
 		$nonce  = wp_create_nonce( 'yourls_term_link_delete' );

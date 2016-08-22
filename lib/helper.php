@@ -85,6 +85,29 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * Get a term meta item with YOURLS data.
+	 *
+	 * @param  integer $term_id   The term ID tied to the meta.
+	 * @param  string  $key       The meta key to look up.
+	 * @param  string  $fallback  An optional default value if none exists.
+	 *
+	 * @return mixed              The postmeta data, fallback value, or false.
+	 */
+	public static function get_yourls_term_meta( $term_id = 0, $key = '_yourls_term_url', $fallback = false ) {
+
+		// Fetch my postmmeta item.
+		$item	= get_term_meta( $term_id, $key, true );
+
+		// Return the item if there.
+		if ( ! empty( $item ) ) {
+			return $item;
+		}
+
+		// Return either empty or fallback.
+		return isset( $fallback ) ? $fallback : false;
+	}
+
+	/**
 	 * Get the post types that YOURLS is enabled for.
 	 *
 	 * @return array  The array of enabled post types.

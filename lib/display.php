@@ -97,3 +97,35 @@ if ( ! function_exists( 'get_yourls_shortlink' ) ) {
 
 }
 
+
+if ( ! function_exists( 'get_yourls_term_shortlink' ) ) {
+	/**
+	 * Get the raw shortlink for a term.
+	 *
+	 * @param  integer $term_id  Current term ID.
+	 * @param  boolean $echo     Whether to echo out the link or just return it.
+	 *
+	 * @return string            The link, or nothing.
+	 */
+	function get_yourls_term_shortlink( $term_id = 0, $echo = false ) {
+
+		// Bail without a term ID.
+		if ( empty( $term_id ) ) {
+			return;
+		}
+
+		// check for the link
+		if ( false === $link = YOURLSCreator_Helper::get_yourls_term_meta( $term_id ) ) {
+			return;
+		}
+
+		// echo the link if requested
+		if ( ! empty( $echo ) ) {
+			echo esc_url( $link );
+		}
+
+		// return the link
+		return esc_url( $link );
+	}
+
+}

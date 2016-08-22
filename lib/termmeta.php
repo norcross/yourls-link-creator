@@ -57,7 +57,7 @@ class YOURLSCreator_TermMeta
 
 			// And our term saving.
 			add_action( 'create_' . $term,              array( $this, 'add_term_data'      ),  10, 2   );
-		//	add_action( 'edit_' . $term,                array( $this, 'edit_term_data'     ),  10, 2   );
+			add_action( 'edit_' . $term,                array( $this, 'edit_term_data'     ),  10, 2   );
 		}
 	}
 
@@ -81,10 +81,6 @@ class YOURLSCreator_TermMeta
 		// Load our files.
 		wp_enqueue_style( 'yourls-admin', plugins_url( '/css/' . $file . '.css', __FILE__ ), array(), YOURLS_VER, 'all' );
 		wp_enqueue_script( 'yourls-admin', plugins_url( '/js/' . $file . '.js', __FILE__ ) , array( 'jquery' ), YOURLS_VER, true );
-		wp_localize_script( 'yourls-admin', 'yourlsAdmin', array(
-			'shortSubmit'   => '<a onclick="prompt(\'URL:\', jQuery(\'#shortlink\').val()); return false;" class="button button-small" href="#">' . __( 'Get Shortlink' ) . '</a>',
-			'defaultError'  => __( 'There was an error with your request.' )
-		));
 	}
 
 	/**
@@ -147,46 +143,93 @@ class YOURLSCreator_TermMeta
 			return;
 		}
 
-		// Get my individual data items.
-		$link   = get_term_meta( $taxonomy->term_id, '_yourls_term_url' );
+		// Set our term ID.
+		$id     = absint( $taxonomy->term_id );
 
-		// If we are creating a YOURLS for the first time, build those fields.
-		if ( empty( $link ) ) {
+		// Check to see if we have a URL or not.
+		$link   = get_term_meta( $id, '_yourls_term_url', true );
 
-			// The field for the keyword.
-			echo '<tr class="form-field yourls-term-form-field yourls-term-form-field-keyword">';
+		// Set up our labeling based on a link being present.
+		$label  = ! empty( $link ) ? __( 'YOURLS Link Data', 'wpyourls' ) : __( 'Generate YOURLS link', 'wpyourls' );
 
-				// The field label.
-				echo '<th scope="row"><label>' . __( 'Generate YOURLS link', 'wpyourls' ) . '</label></th>';
+		// Our main wrapper field.
+		echo '<tr class="form-field yourls-term-form-field">';
 
-				// The field input.
-				echo '<td>';
-					echo '<p>';
+			// The field label.
+			echo '<th scope="row"><label>' . esc_html( $label ) . '</label></th>';
 
-					echo '<input id="yourls-term-keyword" class="yourls-term-keyword-field regular-text" type="text" name="yourls-term-data[keyword]" value="" />';
+			// The field output itself, based on a link being present.
+			echo '<td>';
+				echo ! empty( $link ) ? self::edit_yourls_term_link( $link, $id ) : self::new_yourls_term_link();
+			echo '</td>';
 
-					echo '<span class="description">' . __( 'optional keyword' ) . '</span>';
-
-					echo '</p>';
-
-					echo '<input type="button" class="button button-secondary button-small yourls-api" id="yourls-get" name="yourls-get" value="' . __( 'Create YOURLS link', 'wpyourls' ) . '" data-term-id="' . absint( $taxonomy->term_id ) . '" />';
-
-					// And our create / update type.
-					echo '<input type="hidden" name="yourls-term-create" id="yourls-term-create" value="1" />';
-
-					// Our nonce.
-					wp_nonce_field( 'yourls_term_nonce', 'yourls_term_nonce', false, true );
-
-				// Close the row item.
-				echo '</td>';
-
-			// Close the field.
-			echo '</tr>';
-		}
+		// Close our main wrapper.
+		echo '</tr>';
 	}
 
 	/**
-	 * Save the term data being passed.
+	 * The field output for adding a new YOURLS link to an existing taxonomy.
+	 *
+	 * @return HTML              The field markup.
+	 */
+	public static function new_yourls_term_link() {
+
+		// Set an empty.
+		$field  = '';
+
+		// The checkbox to show / hide the keyword.
+		$field .= '<p class="yourls-term-edit-create-field">';
+			$field .= '<input type="checkbox" id="yourls-edit-term-box" name="yourls-edit-term-box" value="1">';
+			$field .= '<label for="yourls-edit-term-box">' . __( 'Generate YOURLS link', 'wpyourls' ) . '</label>';
+		$field .= '</p>';
+
+		// The keyword field to show if we indeed checked the box.
+		$field .= '<p class="yourls-term-edit-keyword-field">';
+			$field .= '<input type="text" id="yourls-edit-term-keyword" name="yourls-edit-term-keyword" value="">';
+			$field .= '<span class="description">' . __( 'optional keyword' ) . '</span>';
+		$field .= '</p>';
+
+		// Our nonce.
+		$field .= wp_nonce_field( 'yourls_term_edit_nonce', 'yourls_term_edit_nonce', false, false );
+
+		// And return our field build.
+		return $field;
+	}
+
+	/**
+	 * The field output for displaying an YOURLS link to an existing taxonomy.
+	 *
+	 * @param  string  $link     The current link tied to the term.
+	 * @param  integer $term_id  Current term ID.
+	 *
+	 * @return HTML              The field markup.
+	 */
+	public static function edit_yourls_term_link( $link = '', $term_id = 0 ) {
+
+		// Get our current click count.
+		$count  = get_term_meta( $term_id, '_yourls_term_clicks', true );
+
+		// Create a nonce for later
+		$nonce  = wp_create_nonce( 'yourls_term_link_delete' );
+
+		// Set an empty.
+		$field  = '';
+
+		// The field showing the current URL along with the delete button.
+		$field .= '<p class="yourls-term-edit-update-field">';
+			$field .= '<input id="yourls-term-link" title="click to highlight" class="yourls-term-link-input" type="text" name="yourls-term-link" value="' . esc_url( $link ) . '" readonly="readonly" onclick="this.focus();this.select()" />';
+			$field .= '<span class="dashicons dashicons-no yourls-term-delete" title="' . __( 'Delete Link', 'wpyourls' ) . '" data-term-id="' . absint( $term_id ) . '" data-nonce="' . esc_attr( $nonce ) . '"></span>';
+		$field .= '</p>';
+
+		// the box with the counting
+		$field .= '<p class="description"> ' . sprintf( _n( 'Your YOURLS link has generated %d click.', 'Your YOURLS link has generated %d clicks.', absint( $count ), 'wpyourls' ), absint( $count ) ) .'</p>';
+
+		// And return our field build.
+		return $field;
+	}
+
+	/**
+	 * Save the term data being passed from the "add new term" page.
 	 *
 	 * @param integer $term_id  Term ID.
 	 * @param integer $tax_id   Term taxonomy ID.
@@ -208,16 +251,13 @@ class YOURLSCreator_TermMeta
 		// Set our taxonomy.
 		$taxonomy    = sanitize_key( $_POST['taxonomy'] );
 
-		// Set our term name.
-		$term_name   = ! empty( $_POST['tag-name'] ) ? sanitize_text_field( $_POST['tag-name'] ) : '';
-
-		// Get all my terms we want to use this on.
-		$term_array = YOURLSCreator_Helper::get_yourls_terms();
-
 		// Make sure we're on the taxonomy we want.
-		if ( empty( $term_array ) || ! in_array( $taxonomy, $term_array ) ) {
+		if ( ! in_array( $taxonomy, YOURLSCreator_Helper::get_yourls_terms() ) ) {
 			return;
 		}
+
+		// Set our term name.
+		$term_name   = ! empty( $_POST['tag-name'] ) ? sanitize_text_field( $_POST['tag-name'] ) : '';
 
 		// Handle our keyword sanitization.
 		$keyword    = ! empty( $_POST['yourls-new-term-keyword'] ) ? YOURLSCreator_Helper::prepare_api_keyword( $_POST['yourls-new-term-keyword'] ) : '';
@@ -227,35 +267,46 @@ class YOURLSCreator_TermMeta
 	}
 
 	/**
-	 * Save the term data being passed.
+	 * Save the term data being passed from the "edit term" page.
 	 *
-	 * @param integer $term_id   Current term ID.
+	 * @param integer $term_id  Term ID.
+	 * @param integer $tax_id   Term taxonomy ID.
 	 *
 	 * @return void
 	 */
-	public function edit_term_data( $term_id ) {
+	public function edit_term_data( $term_id, $tax_id ) {
 
-		// Bail without the nonce check.
-		if ( empty( $_POST['yourls_term_nonce'] ) && ! wp_verify_nonce( sanitize_key( $_POST['yourls_term_nonce'] ), 'yourls_term_nonce' ) ) {
+		// Without the checkbox, just bail.
+		if ( empty( $_POST['yourls-edit-term-box'] ) || empty( $_POST['taxonomy'] ) ) {
 			return;
 		}
 
-		// Get all my terms we want to use this on.
-		$terms  = YOURLSCreator_Helper::get_yourls_terms();
-
-		// Make sure we're on the taxonomy we want.
-		if ( empty( $terms ) || ! isset( $_POST['taxonomy'] ) || ! in_array( $_POST['taxonomy'], $terms ) ) {
+		// Bail without the nonce check.
+		if ( empty( $_POST['yourls_term_edit_nonce'] ) && ! wp_verify_nonce( sanitize_key( $_POST['yourls_term_edit_nonce'] ), 'yourls_term_edit_nonce' ) ) {
 			return;
 		}
 
 		// Make sure some YOURLS data was sent.
-		if ( empty( $_POST['yourls-term-data'] ) || empty( $_POST['yourls-term-process'] ) ) {
+		if ( empty( $_POST['yourls-edit-term-box'] ) ) {
 			return;
 		}
 
-		// Set the flag for our processing type.
-		$type   = sanitize_key( $_POST['yourls-term-process'] );
+		// Set our taxonomy.
+		$taxonomy    = sanitize_key( $_POST['taxonomy'] );
 
+		// Make sure we're on the taxonomy we want.
+		if ( ! in_array( $taxonomy, YOURLSCreator_Helper::get_yourls_terms() ) ) {
+			return;
+		}
+
+		// Set our term name.
+		$term_name   = ! empty( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
+
+		// Handle our keyword sanitization.
+		$keyword    = ! empty( $_POST['yourls-edit-term-keyword'] ) ? YOURLSCreator_Helper::prepare_api_keyword( $_POST['yourls-edit-term-keyword'] ) : '';
+
+		// And run the processing
+		self::process_term_yourls( $term_id, $taxonomy, $keyword, $term_name );
 	}
 
 	/**
@@ -307,6 +358,8 @@ class YOURLSCreator_TermMeta
 		$build  = YOURLSCreator_Helper::run_yourls_api_call( 'shorturl', $args );
 
 		// Bail if empty data or error received.
+		//
+		// @TODO add some sort of error return.
 		if ( empty( $build ) || false === $build['success'] ) {
 			return;
 		}
@@ -325,6 +378,7 @@ class YOURLSCreator_TermMeta
 			do_action( 'yourls_after_url_term_save', $term_id, $shorturl );
 		}
 
+		// And return.
 		return;
 	}
 

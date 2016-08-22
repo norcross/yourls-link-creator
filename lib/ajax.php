@@ -36,6 +36,7 @@ class YOURLSCreator_Ajax
 	public function __construct() {
 		add_action( 'wp_ajax_create_yourls',        array( $this, 'create_yourls'       )           );
 		add_action( 'wp_ajax_delete_yourls',        array( $this, 'delete_yourls'       )           );
+		add_action( 'wp_ajax_delete_term_yourls',   array( $this, 'delete_term_yourls'  )           );
 		add_action( 'wp_ajax_stats_yourls',         array( $this, 'stats_yourls'        )           );
 		add_action( 'wp_ajax_inline_yourls',        array( $this, 'inline_yourls'       )           );
 		add_action( 'wp_ajax_status_yourls',        array( $this, 'status_yourls'       )           );
@@ -235,6 +236,76 @@ class YOURLSCreator_Ajax
 		$ret['success'] = true;
 		$ret['message'] = __( 'You have removed your YOURLS link.', 'wpyourls' );
 		$ret['linkbox'] = YOURLSCreator_Helper::get_yourls_subbox( $post_id );
+		echo json_encode( $ret );
+		die();
+	}
+
+	/**
+	 * Delete shortlink function
+	 */
+	public function delete_term_yourls() {
+
+		// only run on admin
+		if ( ! is_admin() ) {
+			die();
+		}
+
+		// start our return
+		$ret = array();
+
+		// verify our nonce
+		$check	= check_ajax_referer( 'yourls_term_link_delete', 'nonce', false );
+
+		// check to see if our nonce failed
+		if( ! $check ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NONCE_FAILED';
+			$ret['message'] = __( 'The nonce did not validate.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail if the API key or URL have not been entered
+		if(	false === $api = YOURLSCreator_Helper::get_yourls_api_data() ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_API_DATA';
+			$ret['message'] = __( 'No API data has been entered.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// bail without a term ID
+		if( empty( $_POST['term_id'] ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_TERM_ID';
+			$ret['message'] = __( 'No term ID was present.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// now cast the post ID
+		$id     = absint( $_POST['term_id'] );
+
+		// Check to see if we have a URL or not.
+		$link   = get_term_meta( $id, '_yourls_term_url', true );
+
+		// do a quick check for a URL
+		if ( empty( $link ) ) {
+			$ret['success'] = false;
+			$ret['errcode'] = 'NO_URL_EXISTS';
+			$ret['message'] = __( 'There is no URL to delete.', 'wpyourls' );
+			echo json_encode( $ret );
+			die();
+		}
+
+		// passed it all. go forward
+		delete_term_meta( $id, '_yourls_term_url' );
+		delete_term_meta( $id, '_yourls_term_clicks' );
+
+		// and do the API return
+		$ret['success'] = true;
+		$ret['message'] = __( 'You have removed your YOURLS link.', 'wpyourls' );
+		$ret['linkbox'] = YOURLSCreator_TermMeta::new_yourls_term_link();
 		echo json_encode( $ret );
 		die();
 	}

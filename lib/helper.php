@@ -54,7 +54,7 @@ class YOURLSCreator_Helper
 
 		// Return the specific key if it exists.
 		if ( ! empty( $key ) && isset( $data[ $key ] ) ) {
-			return $data[$key];
+			return $data[ $key ];
 		}
 
 		// Return false, nothing there.
@@ -111,8 +111,17 @@ class YOURLSCreator_Helper
 	 */
 	public static function get_yourls_terms() {
 
-		// Build and return the array of terms.
-		return apply_filters( 'yourls_post_terms', array( 'category', 'post_tag' ) );
+		// Fetch any custom taxonomies saved by the user.
+		$custom = self::get_yourls_option( 'trm' );
+
+		// Build an array of the default taxonomies we are enabling.
+		$built  = array( 'category', 'post_tag' );
+
+		// Filter the default enabled taxonomies.
+		$built  = apply_filters( 'yourls_taxonomies', $built );
+
+		// Return the full array.
+		return ! empty( $custom ) ? array_merge( $custom, $built ) : $built;
 	}
 
 	/**

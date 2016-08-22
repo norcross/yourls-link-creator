@@ -58,11 +58,12 @@ class YOURLSCreator_Settings
 			return;
 		}
 
-		// Set our JS and CSS prefixes.
+		// Set our JS and CSS filenames with minified or not.
 		$file   = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'yourls-admin' : 'yourls-admin.min';
+		$pass   = defined( 'WP_DEBUG' ) && WP_DEBUG ? 'hideShowPassword.js' : 'hideShowPassword.min.js';
 
 		// Load the password stuff.
-		wp_enqueue_script( 'hideshow', plugins_url( '/js/hideShowPassword' . $js_sx, __FILE__ ) , array( 'jquery' ), '2.0.3', true );
+		wp_enqueue_script( 'hideshow', plugins_url( '/js/' . $pass, __FILE__ ) , array( 'jquery' ), '2.0.3', true );
 
 		// Load our files.
 		wp_enqueue_style( 'yourls-admin', plugins_url( '/css/' . $file . '.css', __FILE__ ), array(), YOURLS_VER, 'all' );
@@ -169,14 +170,22 @@ class YOURLSCreator_Settings
 			$store['sht']   = true;
 		}
 
-		// check the boolean for using CPTs
-		if ( ! empty( $data['cpt'] ) ) {
-			$store['cpt']   = true;
-		}
-
 		// check the each possible CPT
 		if ( ! empty( $data['cpt'] ) && ! empty( $data['typ'] ) ) {
+			$store['cpt']   = true;
 			$store['typ']   = YOURLSCreator_Helper::sanitize_array_text( $data['typ'] );
+		} else {
+			$store['cpt']   = false;
+			$store['typ']   = array();
+		}
+
+		// check the each possible taxonomy
+		if ( ! empty( $data['tax'] ) && ! empty( $data['trm'] ) ) {
+			$store['tax']   = true;
+			$store['trm']   = YOURLSCreator_Helper::sanitize_array_text( $data['trm'] );
+		} else {
+			$store['tax']   = false;
+			$store['trm']   = array();
 		}
 
 		// filter it
@@ -195,84 +204,96 @@ class YOURLSCreator_Settings
 	 */
 	public static function save_redirect_settings( $data = array(), $key = 'yourls-settings' ) {
 
-		// first purge the API check
+		// First purge the API check.
 		delete_option( 'yourls_api_test' );
 
-		// delete if empty, else go through some checks
+		// Delete if empty, else go through some checks.
 		if ( empty( $data ) ) {
-			// delete the key
+
+			// Delete the key.
 			delete_option( 'yourls_options' );
-			// get the link
-			$redirect   = self::get_settings_page_link( $key, 'yourls-deleted=1' );
-			// and redirect
+
+			// Get the link.
+			$redirect   = self::get_settings_page_link( $key, array( 'yourls-deleted' => 1 ) );
+
+			// And redirect.
 			wp_redirect( $redirect, 302 );
-			// and exit
+
+			// And exit.
 			exit();
 		}
 
-		// we got something. check and store
+		// We got something. check and store.
 		if ( get_option( 'yourls_options' ) !== false ) {
 			update_option( 'yourls_options', $data );
 		} else {
 			add_option( 'yourls_options', $data, null, 'no' );
 		}
 
-		// get the link
-		$redirect   = self::get_settings_page_link( $key, 'yourls-saved=1' );
+		// Get the link.
+		$redirect   = self::get_settings_page_link( $key, array( 'yourls-saved' => 1 ) );
 
-		// and redirect
+		// And redirect.
 		wp_redirect( $redirect, 302 );
 
-		// and exit
+		// And exit.
 		exit();
 	}
 
 	/**
-	 * display the admin settings based on the
-	 * provided query string
+	 * Display the admin settings based on the provided query string.
 	 *
-	 * @return [type] [description]
+	 * @return void
 	 */
 	public function settings_messages() {
 
-		// check for string first
-		if ( empty( $_GET['yourls-action'] ) ) {
+		// First check to make sure we're on our settings.
+		if ( empty( $_GET['page'] ) || 'yourls-settings' !== $_GET['page'] ) {
 			return;
 		}
 
-		// our saved
+		// Now check for our action string.
+		if ( empty( $_GET['yourls-action'] ) || empty( $_GET['yourls-saved'] ) && empty( $_GET['yourls-deleted'] ) ) {
+			return;
+		}
+
+		// Display our saved message.
 		if ( ! empty( $_GET['yourls-saved'] ) ) {
-			// the message
-			echo '<div class="updated settings-error" id="setting-error-settings_updated">';
+			echo '<div id="message" class="yourls-message updated notice fade is-dismissible">';
 			echo '<p><strong>' . __( 'Your settings have been saved.', 'wpyourls' ) . '</strong></p>';
 			echo '</div>';
 		}
 
-		// our deleted
+		// Display our deleted message.
 		if ( ! empty( $_GET['yourls-deleted'] ) ) {
-			// the message
-			echo '<div class="error settings-error" id="setting-error-settings_updated">';
+			echo '<div id="message" class="yourls-message error notice fade is-dismissible">';
 			echo '<p><strong>' . __( 'Your settings have been deleted.', 'wpyourls' ) . '</strong></p>';
 			echo '</div>';
 		}
 	}
 
 	/**
-	 * get the link of my settings page
+	 * Get the link of my settings page.
 	 *
-	 * @param  string $page   [description]
-	 * @param  string $string [description]
-	 * @return [type]         [description]
+	 * @param  string $page   The desired settings page slug.
+	 * @param  array  $items  The query arg items to add.
+	 *
+	 * @return string         The created link.
 	 */
-	public static function get_settings_page_link( $page = 'yourls-settings', $string = '' ) {
+	public static function get_settings_page_link( $page = 'yourls-settings', $items = array() ) {
 
-		// get the base
-		$base   = menu_page_url( $page, 0 ) . '&yourls-action=1';
+		// Set my base URL for redirecting.
+		$base   = menu_page_url( $page, 0 );
 
-		// build the link
-		$link   = ! empty( $string ) ? $base . '&' . $string : $base;
+		// First set the action link.
+		$link   = add_query_arg( array( 'yourls-action' => 1 ), $base );
 
-		// return it as base or with a string
+		// Now key-value up the passed items.
+		foreach ( $items as $key => $value ) {
+			$link   = add_query_arg( array( sanitize_key( $key ) => sanitize_key( $value ) ), $link );
+		}
+
+		// Return it as base or with a string.
 		return esc_url_raw( html_entity_decode( $link ) );
 	}
 
@@ -284,7 +305,7 @@ class YOURLSCreator_Settings
 	public static function yourls_settings_page() {
 
 		// bail if current user cannot manage options
-		if(	! current_user_can( apply_filters( 'yourls_settings_cap', 'manage_options' ) ) ) {
+		if( ! current_user_can( apply_filters( 'yourls_settings_cap', 'manage_options' ) ) ) {
 			return;
 		}
 		?>
@@ -298,8 +319,8 @@ class YOURLSCreator_Settings
 			self::settings_open();
 			?>
 
-		   	<div class="yourls-form-text">
-		   	<p><?php _e( 'Below are the basic settings for the YOURLS creator. A reminder, your YOURLS install cannot be public.', 'wpyourls' ); ?></p>
+			<div class="yourls-form-text">
+			<p><?php _e( 'Below are the basic settings for the YOURLS creator. A reminder, your YOURLS install cannot be public.', 'wpyourls' ); ?></p>
 			</div>
 
 			<div class="yourls-form-options">
@@ -316,6 +337,8 @@ class YOURLSCreator_Settings
 				$short  = ! empty( $data['sht'] ) ? true : false;
 				$cpts   = ! empty( $data['cpt'] ) ? true : false;
 				$types  = ! empty( $data['typ'] ) ? (array) $data['typ'] : array();
+				$taxs   = ! empty( $data['tax'] ) ? true : false;
+				$terms  = ! empty( $data['trm'] ) ? (array) $data['trm'] : array();
 
 				// load the settings fields
 				wp_nonce_field( 'yourls_settings_save_nonce', 'yourls_settings_save', false, true );
@@ -360,21 +383,34 @@ class YOURLSCreator_Settings
 						<th><?php _e( 'Use YOURLS for shortlink', 'wpyourls' ) ?></th>
 						<td class="setting-item">
 							<input type="checkbox" name="yourls-options[sht]" id="yourls-sht" value="true" <?php checked( $short, true ); ?> />
-							<label for="yourls-sht"><?php _e( 'Use the YOURLS link wherever wp_shortlink is fired', 'wpyourls' ); ?></label>
+							<label for="yourls-sht"><?php _e( 'Use the YOURLS link wherever <code>wp_shortlink</code> is fired', 'wpyourls' ); ?></label>
 						</td>
 					</tr>
 
-					<tr class="setting-item-types">
+					<tr class="setting-item-list setting-item-types" data-list="types">
 						<th><?php _e( 'Include Custom Post Types', 'wpyourls' ) ?></th>
 						<td class="setting-item">
-							<input type="checkbox" name="yourls-options[cpt]" id="yourls-cpt" value="true" <?php checked( $cpts, true ); ?> />
+							<input type="checkbox" name="yourls-options[cpt]" class="setting-list-checkbox" id="yourls-cpt" value="true" <?php checked( $cpts, true ); ?> />
 							<label for="yourls-cpt"><?php _e( 'Display the YOURLS creator on public custom post types', 'wpyourls' ); ?></label>
 						</td>
 					</tr>
 
-					<tr class="secondary yourls-types" style="display:none;">
+					<tr class="secondary yourls-custom-list yourls-types" data-list="types" style="display:none;">
 						<th><?php _e( 'Select the types to include', 'wpyourls' ); ?></th>
 						<td><?php echo self::post_types( $types ); ?></td>
+					</tr>
+
+					<tr class="setting-item-list setting-item-taxs" data-list="terms">
+						<th><?php _e( 'Include Custom Taxonomies', 'wpyourls' ) ?></th>
+						<td class="setting-item">
+							<input type="checkbox" name="yourls-options[tax]" class="setting-list-checkbox" id="yourls-tax" value="true" <?php checked( $taxs, true ); ?> />
+							<label for="yourls-tax"><?php _e( 'Display the YOURLS creator on public custom taxonomies', 'wpyourls' ); ?></label>
+						</td>
+					</tr>
+
+					<tr class="secondary yourls-custom-list yourls-terms" data-list="terms" style="display:none;">
+						<th><?php _e( 'Select the taxonomies to include', 'wpyourls' ); ?></th>
+						<td><?php echo self::taxonomies( $terms ); ?></td>
 					</tr>
 
 				</tbody>
@@ -393,47 +429,96 @@ class YOURLSCreator_Settings
 	<?php }
 
 	/**
-	 * fetch our custom post types and display checkboxes
-	 * @param  array  $types [description]
-	 * @return [type]        [description]
+	 * Fetch our custom post types and create a checkbox list.
+	 *
+	 * @param  array  $selected  The currently selected ones.
+	 *
+	 * @return mixed             The HTML markup.
 	 */
 	private static function post_types( $selected = array() ) {
 
-		// grab CPTs
-		$args	= array(
+		// Set search args.
+		$args   = array(
 			'public'    => true,
 			'_builtin'  => false
 		);
 
-		// fetch the types
-		$types	= get_post_types( $args, 'objects' );
+		// Fetch the types.
+		$types  = get_post_types( $args, 'objects' );
 
-		// return empty if none exist
+		// Return empty if none exist.
 		if ( empty( $types ) ) {
 			return;
 		}
 
-		// output loop of types
-		$boxes	= '';
+		// Output loop of types.
+		$boxes  = '';
 
-		// loop my types
+		// Loop my types.
 		foreach ( $types as $type ) {
 
 			// type variables
-			$name	= $type->name;
-			$label	= $type->labels->name;
+			$name   = $type->name;
+			$label  = $type->labels->name;
 
 			// check for setting in array
 			$check  = ! empty( $selected ) && in_array( $name, $selected ) ? 'checked="checked"' : '';
 
 			// output checkboxes
-			$boxes	.= '<span>';
-				$boxes	.= '<input type="checkbox" name="yourls-options[typ][' . esc_attr( $name ) . ']" id="yourls-options-typ-' . esc_attr( $name ) . '" value="' . esc_attr( $name ) . '" ' . $check . ' />';
-				$boxes	.= '<label for="yourls-options-typ-' . esc_attr( $name ) . '">' . esc_attr( $label ) . '</label>';
-			$boxes	.= '</span>';
+			$boxes  .= '<span>';
+				$boxes  .= '<input type="checkbox" name="yourls-options[typ][' . esc_attr( $name ) . ']" id="yourls-options-typ-' . esc_attr( $name ) . '" value="' . esc_attr( $name ) . '" ' . $check . ' />';
+				$boxes  .= '<label for="yourls-options-typ-' . esc_attr( $name ) . '">' . esc_attr( $label ) . '</label>';
+			$boxes  .= '</span>';
 		}
 
 		// return my boxes
+		return $boxes;
+	}
+
+	/**
+	 * Fetch our custom taxonomies and create a checkbox list.
+	 *
+	 * @param  array  $selected  The currently selected ones.
+	 *
+	 * @return mixed             The HTML markup.
+	 */
+	private static function taxonomies( $selected = array() ) {
+
+		// Set search args.
+		$args   = array(
+			'public'    => true,
+			'_builtin'  => false
+		);
+
+		// Fetch a list of taxonomies
+		$terms  = get_taxonomies( $args, 'objects' );
+
+		// Return empty if none exist.
+		if ( empty( $terms ) ) {
+			return;
+		}
+
+		// Output loop of terms.
+		$boxes  = '';
+
+		// Loop my terms.
+		foreach ( $terms as $term ) {
+
+			// Grab our two variables needed.
+			$name   = $term->name;
+			$label  = $term->labels->name;
+
+			// check for setting in array
+			$check  = ! empty( $selected ) && in_array( $name, $selected ) ? 'checked="checked"' : '';
+
+			// output checkboxes
+			$boxes  .= '<span>';
+				$boxes  .= '<input type="checkbox" name="yourls-options[trm][' . esc_attr( $name ) . ']" id="yourls-options-trm-' . esc_attr( $name ) . '" value="' . esc_attr( $name ) . '" ' . $check . ' />';
+				$boxes  .= '<label for="yourls-options-trm-' . esc_attr( $name ) . '">' . esc_attr( $label ) . '</label>';
+			$boxes  .= '</span>';
+		}
+
+		// Return my boxes.
 		return $boxes;
 	}
 

@@ -7,11 +7,11 @@
 
 **Tags:** YOURLS, shortlink, custom URL
 
-**Requires at least:** 3.6
+**Requires at least:** 4.3
 
-**Tested up to:** 4.4
+**Tested up to:** 4.6
 
-**Stable tag:** 2.1.1
+**Stable tag:** 2.1.2
 
 **License:** GPLv2 or later
 
@@ -78,6 +78,9 @@ This is a limitation with the YOURLS API, as there is not a method yet to delete
 
 
 ## Changelog ##
+
+### 2.1.2 - 08/00/2016 ###
+* term meta WHOOOOO
 
 ### 2.1.1 - 02/25/2016 ###
 * added `yourls_run_cron_jobs` filter to allow users to disable the cron job

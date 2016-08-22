@@ -5,7 +5,7 @@
  * Description: Creates a shortlink using YOURLS and stores as postmeta.
  * Author: Andrew Norcross
  * Author http://andrewnorcross.com
- * Version: 2.1.1
+ * Version: 2.1.2
  * Text Domain: wpyourls
  * Domain Path: languages
  * GitHub Plugin URI: https://github.com/norcross/yourls-link-creator
@@ -40,7 +40,7 @@ if ( ! defined( 'YOURLS_DIR' ) ) {
 
 // Set my version for the plugin.
 if ( ! defined( 'YOURLS_VER' ) ) {
-	define( 'YOURLS_VER', '2.1.1' );
+	define( 'YOURLS_VER', '2.1.2' );
 }
 
 /**

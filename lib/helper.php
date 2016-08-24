@@ -108,6 +108,30 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * Get the stored URL for the item.
+	 *
+	 * @param  integer $item_id  The ID of the item being checked.
+	 * @param  string  $type     Whether we want a post or term URL.
+	 *
+	 * @return string  $link     The URL or false if none exists.
+	 */
+	public static function get_yourls_link( $item_id = 0, $type = 'post' ) {
+
+		// Since most are a post, check that first.
+		if ( 'post' === $type ) {
+			$link   = get_post_meta( $item_id, '_yourls_url', true );
+		}
+
+		// Now check for terms.
+		if ( 'term' === $type ) {
+			$link   = get_term_meta( $item_id, '_yourls_term_url', true );
+		}
+
+		// Return the URL, or false.
+		return ! empty( $link ) ? $link : false;
+	}
+
+	/**
 	 * Get the post types that YOURLS is enabled for.
 	 *
 	 * @return array  The array of enabled post types.
@@ -219,6 +243,32 @@ class YOURLSCreator_Helper
 		$query  = $wpdb->prepare("
 			SELECT	post_id
 			FROM	$wpdb->postmeta
+			WHERE	meta_key = '%s'
+		", esc_sql( $key ) );
+
+		// Fetch the column.
+		$ids    = $wpdb->get_col( $query );
+
+		// Return the array of IDs or false if none.
+		return ! empty( $ids ) ? $ids : false;
+	}
+
+	/**
+	 * Get all the term IDs that contain the YOURLS url.
+	 *
+	 * @param  string $key  The meta key in the database we want to fetch.
+	 *
+	 * @return array        The term IDs containing the meta key.
+	 */
+	public static function get_yourls_term_ids( $key = '_yourls_term_url' ) {
+
+		// Call the global database.
+		global $wpdb;
+
+		// Set up our query.
+		$query  = $wpdb->prepare("
+			SELECT	term_id
+			FROM	$wpdb->termmeta
 			WHERE	meta_key = '%s'
 		", esc_sql( $key ) );
 
@@ -469,15 +519,16 @@ class YOURLSCreator_Helper
 	}
 
 	/**
-	 * make the API call to get the individual click count
+	 * Make the API call to get the individual click count.
 	 *
-	 * @param  integer $post_id [description]
-	 * @return [type]           [description]
+	 * @param  integer $item_id  The ID of the item (post or term).
+	 *
+	 * @return array             The count data.
 	 */
-	public static function get_single_click_count( $post_id = 0 ) {
+	public static function get_single_click_count( $item_id = 0 ) {
 
 		// get the URL
-		$url    = self::get_yourls_meta( $post_id );
+		$url    = self::get_yourls_link( $item_id );
 
 		// a secondary check to see if we have the URL
 		if ( empty( $url ) ) {
@@ -505,6 +556,39 @@ class YOURLSCreator_Helper
 			'errcode'   => null,
 			'clicknm'   => $count
 		);
+	}
+
+	/**
+	 * Convert old YOURLS keys (from old plugins) to the new one.
+	 *
+	 * @param  string  $key    The old meta key to convert.
+	 *
+	 * @return integer $count  The total amount of items updated.
+	 */
+	public static function convert_yourls_keys( $key = 'yourls_shorturl' ) {
+
+		// Bail without a key.
+		if ( empty( $key ) ) {
+			return false;
+		}
+
+		// Set up SQL query.
+		global $wpdb;
+
+		// Prepare my query.
+		$setup  = $wpdb->prepare("
+			UPDATE $wpdb->postmeta
+			SET    meta_key = '%s'
+			WHERE  meta_key = '%s'
+			",
+			esc_sql( '_yourls_url' ), esc_sql( $key )
+		);
+
+		// Run SQL query.
+		$query = $wpdb->query( $setup );
+
+		// Return the count if greater than zero, or false.
+		return absint( $query ) > 0 ? $query : false;
 	}
 
 	/**

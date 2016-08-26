@@ -280,6 +280,30 @@ class YOURLSCreator_Helper
 	}
 
 	/**
+	 * Get all the IDs that contain a YOURLS link.
+	 *
+	 * @return array  The post and term IDs containing the meta key.
+	 */
+	public static function get_all_yours_ids() {
+
+		// First set an empty array.
+		$ids    = array();
+
+		// Run the check for posts.
+		if ( false !== $post = self::get_yourls_post_ids() ) {
+			$ids['post']    = $post;
+		}
+
+		// Run the check for terms.
+		if ( false !== $term = self::get_yourls_term_ids() ) {
+			$ids['term']    = $term;
+		}
+
+		// Return our items.
+		return ! empty( $ids ) ? $ids : false;
+	}
+
+	/**
 	 * Get the API endpoint URL.
 	 *
 	 * @return string   The stored API endpoint.
@@ -287,7 +311,9 @@ class YOURLSCreator_Helper
 	public static function get_yourls_api_url() {
 
 		// Fetch the stored base URL link.
-		$stored = self::get_yourls_api_data( 'url' );
+		if ( false === $stored = self::get_yourls_api_data( 'url' ) ) {
+			return false;
+		}
 
 		// Parse the link.
 		$parsed = parse_url( esc_url( $stored ) );
@@ -522,16 +548,14 @@ class YOURLSCreator_Helper
 	 * Make the API call to get the individual click count.
 	 *
 	 * @param  integer $item_id  The ID of the item (post or term).
+	 * @param  string  $type     Whether we want a post or term URL.
 	 *
 	 * @return array             The count data.
 	 */
-	public static function get_single_click_count( $item_id = 0 ) {
+	public static function get_single_click_count( $item_id = 0, $type = 'post' ) {
 
-		// get the URL
-		$url    = self::get_yourls_link( $item_id );
-
-		// a secondary check to see if we have the URL
-		if ( empty( $url ) ) {
+		// Get my URL and bail if we don't have one.
+		if ( false === $url = self::get_yourls_link( $item_id, $type ) ) {
 			return false;
 		}
 

@@ -625,31 +625,47 @@ class YOURLSCreator_Ajax
 		}
 
 		// Fetch the IDs that contain a YOURLS url meta key.
-		if ( false === $items = YOURLSCreator_Helper::get_yourls_post_ids() ) {
+		if ( false === $items = YOURLSCreator_Helper::get_all_yours_ids() ) {
 			$ret['success'] = false;
-			$ret['errcode'] = 'NO_POST_IDS';
+			$ret['errcode'] = 'NO_ITEM_IDS';
 			$ret['message'] = __( 'There are no items with stored URLs.', 'wpyourls' );
 			echo json_encode( $ret );
 			die();
 		}
 
-		// Loop the IDs.
-		foreach ( $items as $item_id ) {
+		// Loop the ID groups.
+		foreach ( $items as $type => $item_array ) {
 
-			// Get my click number.
-			$clicks = YOURLSCreator_Helper::get_single_click_count( $item_id );
+			// Now loop my item array.
+			foreach ( $item_array as $item_id ) {
 
-			// Bad API call.
-			if ( empty( $clicks['success'] ) ) {
-				$ret['success'] = false;
-				$ret['errcode'] = $clicks['errcode'];
-				$ret['message'] = $clicks['message'];
-				echo json_encode( $ret );
-				die();
+				// Get my click number.
+				$clicks = YOURLSCreator_Helper::get_single_click_count( $item_id, $type );
+
+				// Bad API call.
+				if ( empty( $clicks['success'] ) ) {
+					$ret['success'] = false;
+					$ret['errcode'] = $clicks['errcode'];
+					$ret['message'] = $clicks['message'];
+					echo json_encode( $ret );
+					die();
+				}
+
+				// If no count, continue.
+				if ( empty( $clicks['clicknm'] ) ) {
+					continue;
+				}
+
+				// Update the post meta.
+				if ( 'post' === $type ) {
+					update_post_meta( $item_id, '_yourls_clicks', absint( $clicks['clicknm'] ) );
+				}
+
+				// Update the post meta.
+				if ( 'term' === $type ) {
+					update_term_meta( $item_id, '_yourls_term_clicks', absint( $clicks['clicknm'] ) );
+				}
 			}
-
-			// Got it. update the meta.
-			update_post_meta( $item_id, '_yourls_clicks', $clicks['clicknm'] );
 		}
 
 		// And do the API return.
